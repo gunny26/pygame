@@ -48,12 +48,17 @@ while True:
     # fft
     fft = abs(scipy.fft(signal))
     # frequencies
-    freqs = abs(scipy.fftpack.fftfreq(signal.size, duration))
-    faktor = 10000
-    fft = -fft / faktor
+    # freqs = abs(scipy.fftpack.fftfreq(signal.size, duration))
+    faktor = 500
+    fft = middle -fft / faktor
     # print fft
     # t = scipy.linspace(0, time.time(), WIDTH)
-    for x in range(surface.get_width()):
-        pygame.draw.line(surface, (255, 255, 255), (x, middle), (x, middle + fft[x]), 1)
+    points = []
+    points = numpy.column_stack((xrange(len(fft)), fft))
+    #for x in range(surface.get_width()):
+    #    points.append((x, fft[x]))
+    print points
+    pygame.draw.aalines(surface, (255, 255, 255), False, points, 1)
+        
     pygame.display.update()
     clock.tick(FPS)

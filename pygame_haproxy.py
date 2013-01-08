@@ -7,6 +7,7 @@ import sys
 
 
 SCREEN = (640,480)
+FPS = 0.5
 
 class GraphData:
     """Holds Data for grafics display with pygame"""
@@ -34,9 +35,9 @@ class GraphData:
             # append to end, but only difference to last data
             self.data.append(data - self.last_data)
             self.last_data = data
-        print self.data
+        # print self.data
 
-    def get_data(self):
+    def get_data(self, off_y=0):
         "returns normalized Dataset to draw with pygame.draw.polygon"
         gauge_data = self.data
         maximum = max(gauge_data)
@@ -45,9 +46,9 @@ class GraphData:
         counter = 0
         for data in gauge_data:
             if maximum > 0:
-                plot_data.append((counter, data * self.height / maximum))
+                plot_data.append((counter, off_y - data * self.height / maximum))
             else:
-                plot_data.append((counter, 0))
+                plot_data.append((counter, off_y - 0))
             counter += 1
         plot_data.append((self.length, 0))
         return(plot_data)
@@ -98,6 +99,12 @@ def csv_to_dict(csv):
         # print hadata[key]
     return(hadata)
 
+def draw_grid(surface, color, step_x, step_y):
+    for x in range(0, surface.get_width(), step_x):
+        pygame.draw.line(surface, color, (x, 0), (x, surface.get_height()), 1)
+    for y in range(0, surface.get_height(), step_y):
+        pygame.draw.line(surface, color, (0, y), (surface.get_width(), y), 1)
+
 def get_data(hadata, pxname, svname, key):
     return(hadata["%s_%s" % (pxname, svname)][key])
  
@@ -106,6 +113,8 @@ def main(top_level_url, url, username, password):
     surface = pygame.display.set_mode(SCREEN)
     pygame.init()
     graph_data=GraphData(640, 480)
+    clock = pygame.time.Clock()
+    # graph_data = numpy.zeros(640, numpy.dtint))
     while True:
         csv = get_haproxy_csv(top_level_url, url, username, password)
         # something like this
@@ -118,18 +127,19 @@ def main(top_level_url, url, username, password):
         data = int(get_data(hadata, "cf_dynamic", "BACKEND", "bout"))
         print "lb01 FRONTEND bout:", data
         graph_data.add(data)
-        points = graph_data.get_data()
-        print points
+        points = graph_data.get_data(int(surface.get_height() / 2))
+        # print points
 
         # pygame stuff
         # blank screen
         surface.fill((0,0,0))
-        pygame.draw.polygon(surface, (255, 0, 0), points, 1)
+        draw_grid(surface, (100, 100, 100), 10, 10)
+        pygame.draw.aalines(surface, (255, 0, 0), False, points, 1)
         pygame.display.update()
-        time.sleep(5)
+        clock.tick(FPS)
 
 if __name__ == "__main__":
-    url_base = sys.agrv[1]
+    url_base = sys.argv[1]
     username = sys.argv[2]
     password = sys.argv[3]
-    main("http://srvweblb01.tilak.cc", "http://srvweblb01.tilak.cc/haproxy?stats;csv", "mesznera", "geheim2")
+    main(url_base, "%s/haproxy?stats;csv" % url_base, username, password)
