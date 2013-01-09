@@ -12,7 +12,7 @@ import sys
 WIDTH = 640
 HEIGHT = 400
 BUFFER = 640 # length of sample
-RATE = 2048 # bitrate to rcord
+RATE = 44100 # bitrate to rcord
 FPS = 30
 
 t = None
@@ -26,7 +26,8 @@ def simulate():
 
 pygame.init()
 surface = pygame.display.set_mode((WIDTH, HEIGHT))
-middle = surface.get_height() / 2
+zero_fft = int(surface.get_height() / 3)
+zero_signal = int(2 * surface.get_height() / 3)
 
 # initialize pyaudio and open device
 p = pyaudio.PyAudio()
@@ -48,17 +49,18 @@ while True:
     # fft
     fft = abs(scipy.fft(signal))
     # frequencies
-    # freqs = abs(scipy.fftpack.fftfreq(signal.size, duration))
+    freqs = scipy.fftpack.fftfreq(signal.size, duration)
+    # print freqs
     faktor = 500
-    fft = middle -fft / faktor
     # print fft
     # t = scipy.linspace(0, time.time(), WIDTH)
-    points = []
-    points = numpy.column_stack((xrange(len(fft)), fft))
+    points_fft = numpy.column_stack((xrange(len(fft)), zero_fft - fft / faktor))
+    # points_freqs = numpy.column_stack((xrange(len(freqs)), middle + freqs / faktor))
+    points_signal = numpy.column_stack((xrange(len(freqs)), zero_signal + signal / 100))
     #for x in range(surface.get_width()):
     #    points.append((x, fft[x]))
-    print points
-    pygame.draw.aalines(surface, (255, 255, 255), False, points, 1)
-        
+    # print points
+    pygame.draw.aalines(surface, (255, 0, 0), False, points_fft, 1)
+    pygame.draw.aalines(surface, (0, 255, 0), False, points_signal, 1)
     pygame.display.update()
     clock.tick(FPS)
