@@ -15,13 +15,13 @@ pygame.init()
 pygame.display.set_gamma(0.5)
 pygame.camera.init()
 # set up a camera object
-cam = pygame.camera.Camera("/dev/video1",(640,480), "RGB")
+cam = pygame.camera.Camera("/dev/video0",(640,480), "RGB")
 # start the camera
 cam.start()
 # hflip if front camera and self portait
 hflip = True
 vflip = False
-brightness = 160
+brightness = 1
 cam.set_controls(hflip=hflip, vflip=vflip, brightness=brightness)
 
 track_color = None
