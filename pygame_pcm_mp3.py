@@ -1,20 +1,14 @@
 #!/usr/bin/python
-import scipy
 import mad
-import scipy.fftpack
-from scipy import pi
 import pyaudio
 import numpy
-import time
 import pygame
-import random
 import sys
-import mad
 
 WIDTH = 640
 HEIGHT = 400
-BUFFER = 640 # length of sample
-X_ARRAY = xrange(BUFFER)
+BUFFER = 320 # length of sample
+X_ARRAY = xrange(0, BUFFER * 2, 2)
 RATE = 44100 # bitrate to rcord
 FPS = 120
 MP3 = "monkey_island_theme.mp3"
@@ -53,19 +47,18 @@ while True:
             pygame.quit()
             sys.exit()
     surface.fill((0, 0, 0))
-    t1 = time.time()
     # pcm signal
     pcm = in_stream.read(BUFFER)
     signal = numpy.fromstring(pcm, dtype=numpy.int16)[0:BUFFER]
     out_stream.write(pcm)
-    points_signal = numpy.column_stack((X_ARRAY, zero_signal + signal / 200))
-    np.append(points_signal)
+    np.append(signal)
     np.pop(0)
     counter = 0
-    for points in np:
-        if points is None:
+    for signal in np:
+        if signal is None:
             continue
-        pygame.draw.lines(surface, colors[counter], False, points, 1)
+        points = numpy.column_stack((X_ARRAY, zero_signal + signal / 200 + counter * 10))
+        pygame.draw.aalines(surface, colors[counter], False, points, 1)
         counter += 1
     pygame.display.update()
     clock.tick(FPS)
