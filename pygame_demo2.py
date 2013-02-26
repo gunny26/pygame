@@ -15,9 +15,14 @@ from Vector2d import Vector2d as Vector2d
 SCREEN = (640, 480)
 # control Frame Rate
 CLOCK = pygame.time.Clock()
-FPS = 50000
+FPS = 50
 # define background musicfile
 BACKGROUND_MUSIC = "monkey_island_theme.mp3"
+
+class FinishedException(Exception):
+
+    def __init__(self, msg):
+        self.msg = msg
 
 
 class GameObject(object):
@@ -68,14 +73,50 @@ class StarField(GameObject):
             if y > self.surface.get_height() : 
                 y = 0
             # directioon
-            point = (x + self.direction[0], y + math.sin(self.degree * x) * self.amplitude  + self.direction[1])
+            point = (int(x + self.direction[0]), int(y + math.sin(self.degree * x) * self.amplitude  + self.direction[1]))
             newpoints.append(point)
         self.points = newpoints
         self.draw()
 
     def draw(self):
         for point in self.points:
-            pygame.draw.line(self.surface, self.color, point, point)
+            self.surface.set_at(point, self.color)
+
+class WormHole(GameObject):
+
+    def __init__(self, surface, game_engine, color=(255, 255, 255)):
+        GameObject.__init__(self, surface, game_engine)
+        self.color = color
+        self.middle = Vec2d(self.surface.get_width() / 2, self.surface.get_height() / 2)
+        self.circles = []
+        self.initialize()
+        self.angle = 0
+
+    def initialize(self):
+        for index in range(10):
+            circle = []
+            first = Vec2d(20 * index * 1.2, 0)
+            for degree in xrange(0, 360, 5):
+                circle.append(first.rotated(degree))
+            self.circles.append(circle)
+
+    def run(self):
+        angle = self.angle
+        index = 1
+        for circle in self.circles:
+            origin = self.middle + Vec2d(10 * index * 1.2, 0).rotated(angle)
+            for point in circle:
+                point.rotate(5)
+                draw_point = origin + point
+                self.surface.set_at((int(draw_point.x), int(draw_point.y)), self.color)
+            # rotate for next circle
+            angle += 10
+            index += 1 
+        self.angle += 10
+        #self.draw()
+
+    def draw(self):
+        pass
 
 class BouncingHline(GameObject):
 
@@ -152,14 +193,14 @@ class GameEngine(object):
     def generate(self):
         """ generates a new character and put it on the list """
         self.game_objects.append(RotatingLine(self.surface, self))
-        self.game_objects.append(StarField(self.surface, self, direction=(1, 3), color=(128, 128, 128), amplitude=2))
-        self.game_objects.append(StarField(self.surface, self, direction=(2, 2), color=(200, 200, 200), amplitude=1))
-        self.game_objects.append(StarField(self.surface, self, direction=(3, 1), color=(255, 255, 255), amplitude=2))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=(255, 0, 0), amplitude=100, start=0))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=(250, 0, 0), amplitude=99, start=5))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=(245, 0, 0), amplitude=98, start=10))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=(240, 0, 0), amplitude=97, start=15))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=(235, 0, 0), amplitude=96, start=20))
+        self.game_objects.append(StarField(self.surface, self, direction=(1, 3), color=100, amplitude=2))
+        self.game_objects.append(StarField(self.surface, self, direction=(2, 2), color=150, amplitude=1))
+        self.game_objects.append(StarField(self.surface, self, direction=(3, 1), color=160, amplitude=2))
+        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=255, amplitude=100, start=0))
+        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=225, amplitude=99, start=5))
+        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=205, amplitude=98, start=10))
+        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=185, amplitude=97, start=15))
+        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=165, amplitude=96, start=20))
 
     def delete(self, child, clicked):
         """deletes child from list"""
@@ -167,8 +208,106 @@ class GameEngine(object):
             if item == child:
                 self.game_objects.remove(item)
 
+class SetPalette(object):
+    """simple sets palette"""
 
-def ingame_loop(surface, game_engine):
+    def __init__(self, surface, palette):
+        self.surface = surface
+        self.palette = palette
+
+    def run(self):
+        self.surface.set_palette(self.palette)
+        raise FinishedException("job done, delete me")
+
+class FlashEffect(object):
+    """Flashes Surface, fade all colors to white"""
+
+    def __init__(self, surface, beat, repeat, amount):
+        self.surface = surface
+        self.beat = beat
+        self.repeat = repeat
+        self.amount = amount
+        # current timestamp
+        self.timestamp = time.time() + beat
+        # how long will the surface be white
+        self.flash_active = 0
+        # white palette
+        self.white = []
+        for x in xrange(255):
+            self.white.append((255, 255, 255))
+        self.old_palette = None
+
+    def run(self):
+        if self.flash_active == 1:
+            # reset to old palette
+            self.surface.set_palette(self.old_palette)
+            self.flash_active = 0
+        elif self.flash_active > 0:
+            # surface was flashed
+            self.flash_active -= 1
+        elif time.time() >= self.timestamp:
+            # trigger for new flash was reached
+            self.old_palette = self.surface.get_palette()
+            self.surface.set_palette(self.white)
+            self.timestamp = time.time() + self.beat
+            # flash will last 5 Frames
+            self.flash_active = 5
+            self.amount -= 1
+        if self.amount == 0:
+            raise FinishedException("finished work, delete me")
+
+class FadeEffect(object):
+    """Flashes Surface, fade all colors to white"""
+
+    def __init__(self, surface, counter=7):
+        self.surface = surface
+        self.palette = self.surface.get_palette()
+        # fade to black in counter Frames
+        self.counter = counter
+
+    def run(self):
+        newpalette = []
+        for (red, green, blue) in self.surface.get_palette():
+            red = int(red / 1.2)
+            green = int(green / 1.2 )
+            blue = int(blue / 1.2 )
+            newpalette.append((red, green, blue))
+        self.counter -= 1
+        self.surface.set_palette(newpalette)
+        print self.counter
+        if self.counter == 0:
+            raise FinishedException("finished work, delete me")
+
+class TimeLine(object):
+    """Controls Postprocessing Effects"""
+
+    def __init__(self, surface):
+        """just __init__"""
+        self.surface = surface
+        self.effects = []
+        self.initialize()
+
+    def update(self):
+        try:
+            effect = self.effects[0]
+            try:
+                effect.run()
+            except FinishedException:
+                print "%s ended" % effect.__class__.__name__
+                del self.effects[0]
+        except IndexError:
+            print "No more effekts to do"
+            pass
+
+    def initialize(self):
+        """generate list of effects"""
+        self.effects.append(FlashEffect(self.surface, beat=2, repeat=True, amount=5))
+        self.effects.append(FadeEffect(self.surface))
+        self.effects.append(SetPalette(self.surface, PALETTE))
+        self.effects.append(WormHole(self.surface, self, 255))
+
+
+def ingame_loop(surface, game_engine, post_processor):
     """ main ingame loop """
     while True:
         events = pygame.event.get()  
@@ -184,10 +323,11 @@ def ingame_loop(surface, game_engine):
         CLOCK.tick(FPS)
         # time.sleep( sleeptime__in_seconds )
         # blank screen
-        surface.fill([100, 100, 100])
+        surface.fill(0)
         # update everything
         pygame.display.set_caption("frame rate: %.2f frames per second" % CLOCK.get_fps())
         state = game_engine.update()
+        post_processor.update()
         # state of engine could be
         # running
         # finished - player reached end of game
@@ -202,17 +342,25 @@ def main():
     # this is where one sets how long the script
     # sleeps for, between frames.sleeptime__in_seconds = 0.05
     # initialise the display window
-    screen = pygame.display.set_mode(SCREEN)
+    screen = pygame.display.set_mode(SCREEN, 0, 8)
+    global PALETTE
+    PALETTE = []
+    for index in xrange(255):
+        PALETTE.append((index, 0,0))
+    old_palette = screen.get_palette()
+    screen.set_palette(PALETTE)
+    
     pygame.init()
-    #pygame.mixer.init()
-    #pygame.mixer.music.load(BACKGROUND_MUSIC)
-    #pygame.mixer.music.play(-1) # endless background music
+    pygame.mixer.init()
+    pygame.mixer.music.load(BACKGROUND_MUSIC)
+    pygame.mixer.music.play(-1) # endless background music
 
     while True:
         # main logic of game
         game_engine = GameEngine(screen, None)
+        post_processor = TimeLine(screen)
         # start game loop
-        state = ingame_loop(screen, game_engine)
+        state = ingame_loop(screen, game_engine, post_processor)
         # state could be
         # finished - player finished level
         # lost - player lost
