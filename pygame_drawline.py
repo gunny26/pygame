@@ -123,26 +123,47 @@ class Drawline(GameObject):
         self.max_radius = 100
         self.min_radius = -100
         self.step = 0.1
+        # a stack with points to draw
+        self.point_stack = []
         # calculate first point 
-        self.oldpoint = (self.x, self.y) + self.__get_vector()
+        self.__add_point()
 
     def __get_vector(self):
-        return(self.radius * Vec2d(math.cos(self.torad * self.angle), math.sin(self.torad * self.angle)))
+        return(self.radius * Vec2d(math.cos(self.torad * self.angle)*math.sin(self.torad * self.radius), math.sin(self.torad * self.angle)* math.sin(self.torad * self.radius)))
+
+    def __add_point(self):
+        vec = self.__get_vector()
+        newpoint = (self.x, self.y) + vec
+        self.point_stack.append(newpoint)
+        if len(self.point_stack) > 255:
+            self.point_stack.pop(0)
+
+    def __get_point(self):
+        return(self.point_stack[0])
 
     def update(self):
-        newpoint = (self.x, self.x) + self.__get_vector()
-        pygame.draw.line(self.surface, self.color, self.oldpoint, newpoint)
-        # print self.angle, self.x, self.y, newpoint
-        self.oldpoint = newpoint
+        oldpoint = self.__get_point()
+        self.__add_point()
+        newpoint = self.__get_point()
+        # pygame.draw.line(self.surface, self.color, self.oldpoint, newpoint)
+        # print self.angle, self.radius, oldpoint, newpoint, len(self.point_stack)
         self.angle += self.speed
-        if (self.radius < self.min_radius) | (self.radius > self.max_radius):
-            self.game_engine.game_objects.append(Drawline(self.surface, self.game_engine, speed=self.speed+1, color=(0, 255, 0), x=self.oldpoint.x, y=self.oldpoint.y))
-            self.step = -self.step
-            self.speed = -self.speed
         self.radius += self.step 
+        if (self.radius < self.min_radius) | (self.radius > self.max_radius):
+            self.game_engine.game_objects.append(Drawline(self.surface, self.game_engine, speed=-self.speed, color=self.color, x=oldpoint.x, y=oldpoint.y))
+            # (self.x, self.y) = newpoint - Vec2d(self.x - newpoint.x, self.y - newpoint.y)
+            self.step = - self.step
+            self.speed += 1
+        self.draw()
 
     def draw(self):
-        pass
+        color = self.color
+        if len(self.point_stack) > 2:
+            first = self.point_stack[0]
+            for point in self.point_stack[1:]:
+                pygame.draw.line(self.surface, color, first, point, 2)
+                color = (color[0] - 1, color[1] + 1, color[2] + 1)
+                first = point
 
 class RotatingLine(GameObject):
     
@@ -223,7 +244,7 @@ def ingame_loop(surface, game_engine):
         CLOCK.tick(FPS)
         # time.sleep( sleeptime__in_seconds )
         # blank screen
-        # surface.fill([100, 100, 100])
+        surface.fill([100, 100, 100])
         # update everything
         pygame.display.set_caption("frame rate: %.2f frames per second" % CLOCK.get_fps())
         state = game_engine.update()
