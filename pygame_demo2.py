@@ -4,9 +4,11 @@
 import sys
 import time
 import pygame
+from pygame import gfxdraw
 import random
 import os
 import math
+import noise
 # from pygame.locals import *
 from Vec2d import Vec2d as Vec2d
 from Vector2d import Vector2d as Vector2d
@@ -118,6 +120,59 @@ class WormHole(GameObject):
     def draw(self):
         pass
 
+
+class Bean(object):
+
+    def __init__(self, surface, beans, parameter_dict):
+        self.__dict__.update(parameter_dict)
+        self.surface = surface
+        self.beans = beans
+        self.vel = 3 # or option vel
+        self.accel = -0.004 # or option accel
+
+    def draw(self):
+        if self.vel < 0 :
+            self.beans.remove(self)
+        self.x_off += 0.0007
+        self.y_off += 0.0007
+        self.vel += self.accel
+        self.x += abs(noise.pnoise1(self.x_off) * self.vel) - self.vel / 2
+        self.y += abs(noise.pnoise1(self.y_off) * self.vel) - self.vel / 2
+        self.surface.set_at((int(self.x), int(self.y)), self.get_color())
+
+    def get_color(self):
+        h = abs(noise.pnoise1((self.x_off + self.y_off) / 2)) * 360
+        color = pygame.Color(0, 255, 0, 100)
+        print color
+        # color.hsva = (h, 100, 100, 4)
+        return(color)
+
+
+class CoffeeDraw(GameObject):
+
+    def __init__(self, surface, game_engine):
+        GameObject.__init__(self, surface, game_engine)
+        self.beans = []
+        self.framecount = 1
+
+    def update(self):
+        self.framecount += 1
+        x_off = self.framecount * 0.0003
+        y_off = x_off + 20
+        x = noise.pnoise1(x_off) * self.surface.get_width()
+        y = noise.pnoise1(y_off) * self.surface.get_height()
+        # every 8th frame a new bean
+        print len(self.beans)
+        if self.framecount % 8 == 0:
+            self.beans.append(Bean(self.surface, self.beans, { 
+                "x" : x, 
+                "y" : y, 
+                "x_off" : x_off, 
+                "y_off" : y_off}))
+        for bean in self.beans:
+            bean.draw()
+
+
 class BouncingHline(GameObject):
 
     def __init__(self, surface, game_engine, speed, color=(255, 255, 255), amplitude=10, start=0):
@@ -192,15 +247,16 @@ class GameEngine(object):
         
     def generate(self):
         """ generates a new character and put it on the list """
-        self.game_objects.append(RotatingLine(self.surface, self))
-        self.game_objects.append(StarField(self.surface, self, direction=(1, 3), color=100, amplitude=2))
-        self.game_objects.append(StarField(self.surface, self, direction=(2, 2), color=150, amplitude=1))
-        self.game_objects.append(StarField(self.surface, self, direction=(3, 1), color=160, amplitude=2))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=255, amplitude=100, start=0))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=225, amplitude=99, start=5))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=205, amplitude=98, start=10))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=185, amplitude=97, start=15))
-        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=165, amplitude=96, start=20))
+        self.game_objects.append(CoffeeDraw(self.surface, self))
+#        self.game_objects.append(RotatingLine(self.surface, self))
+#        self.game_objects.append(StarField(self.surface, self, direction=(1, 3), color=100, amplitude=2))
+#        self.game_objects.append(StarField(self.surface, self, direction=(2, 2), color=150, amplitude=1))
+#        self.game_objects.append(StarField(self.surface, self, direction=(3, 1), color=160, amplitude=2))
+#        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=255, amplitude=100, start=0))
+#        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=225, amplitude=99, start=5))
+#        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=205, amplitude=98, start=10))
+#        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=185, amplitude=97, start=15))
+#        self.game_objects.append(BouncingHline(self.surface, self, speed=1, color=165, amplitude=96, start=20))
 
     def delete(self, child, clicked):
         """deletes child from list"""
@@ -323,7 +379,7 @@ def ingame_loop(surface, game_engine, post_processor):
         CLOCK.tick(FPS)
         # time.sleep( sleeptime__in_seconds )
         # blank screen
-        surface.fill(0)
+        # surface.fill(0)
         # update everything
         pygame.display.set_caption("frame rate: %.2f frames per second" % CLOCK.get_fps())
         state = game_engine.update()
