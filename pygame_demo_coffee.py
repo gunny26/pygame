@@ -66,8 +66,8 @@ class Bean(object):
         self.x_off += 0.0007
         self.y_off += 0.0007
         self.vel += self.accel
-        self.x += noise.pnoise1(self.x_off, octaves=8) * self.vel - self.vel / 2
-        self.y += noise.pnoise1(self.y_off, octaves=8) * self.vel - self.vel / 2
+        self.x += noise.pnoise1(self.x_off, octaves=8, repeat=8) * self.vel - self.vel / 2
+        self.y += noise.pnoise1(self.y_off, octaves=8, repeat=8) * self.vel - self.vel / 2
         pygame.gfxdraw.pixel(self.surface, int(self.x) % self.surface.get_width(), int(self.y) % self.surface.get_height(), self.get_color())
 
     def get_color(self):
@@ -88,8 +88,8 @@ class CoffeeDraw(GameObject):
         self.framecount += 1
         x_off = self.framecount * 0.0003
         y_off = x_off + 20
-        x = noise.pnoise1(x_off, octaves=8) * self.surface.get_width()
-        y = noise.pnoise1(y_off, octaves=8) * self.surface.get_height()
+        x = noise.pnoise1(x_off, octaves=8, repeat=8) * self.surface.get_width()
+        y = noise.pnoise1(y_off, octaves=8, repeat=8) * self.surface.get_height()
         # every 8th frame a new bean
         if self.framecount % 8 == 0:
             self.beans.append(Bean(self.surface, self.beans, { 
