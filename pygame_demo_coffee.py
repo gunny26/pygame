@@ -17,7 +17,7 @@ from Vector2d import Vector2d as Vector2d
 SCREEN = (800, 600)
 # control Frame Rate
 CLOCK = pygame.time.Clock()
-FPS = 5000
+FPS = 300
 # define background musicfile
 BACKGROUND_MUSIC = "monkey_island_theme.mp3"
 
@@ -59,22 +59,23 @@ class Bean(object):
         self.beans = beans
         self.vel = 3 # or option vel
         self.accel = -0.003 # or option accel
+        self.width = self.surface.get_width()
+        self.height = self.surface.get_height()
+        self.color = pygame.Color(0, 0, 0, 0)
 
     def draw(self):
         if self.vel < 0 :
             self.beans.remove(self)
+        # original 0.0007
         self.x_off += 0.0007
         self.y_off += 0.0007
         self.vel += self.accel
         self.x += noise.pnoise1(self.x_off, octaves=8) * self.vel - self.vel / 2
         self.y += noise.pnoise1(self.y_off, octaves=8) * self.vel - self.vel / 2
-        pygame.gfxdraw.pixel(self.surface, int(self.x) % self.surface.get_width(), int(self.y) % self.surface.get_height(), self.get_color())
-
-    def get_color(self):
+        # set color
         h = abs(noise.pnoise1((self.x_off + self.y_off) / 2)) * 360
-        color = pygame.Color(0, 0, 0, 0)
-        color.hsva = (h, 100, 100, 4)
-        return(color)
+        self.color.hsva = (h, 100, 100, 4)
+        pygame.gfxdraw.pixel(self.surface, int(self.x) % self.width, int(self.y) % self.height, self.color)
 
 
 class CoffeeDraw(GameObject):
@@ -167,9 +168,9 @@ def main():
     screen = pygame.display.set_mode(SCREEN)
     
     pygame.init()
-    pygame.mixer.init()
-    pygame.mixer.music.load(BACKGROUND_MUSIC)
-    pygame.mixer.music.play(-1) # endless background music
+    #pygame.mixer.init()
+    #pygame.mixer.music.load(BACKGROUND_MUSIC)
+    #pygame.mixer.music.play(-1) # endless background music
 
     while True:
         # main logic of game
