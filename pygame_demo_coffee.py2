@@ -5,14 +5,19 @@ import sys
 import time
 import pygame
 from pygame import gfxdraw
+import random
 import os
+import math
 import noise
+# from pygame.locals import *
+from Vec2d import Vec2d as Vec2d
+from Vector2d import Vector2d as Vector2d
 
 # define screen size
 SCREEN = (800, 600)
 # control Frame Rate
 CLOCK = pygame.time.Clock()
-FPS = 500
+FPS = 300
 # define background musicfile
 BACKGROUND_MUSIC = "monkey_island_theme.mp3"
 
@@ -160,13 +165,12 @@ def main():
     # this is where one sets how long the script
     # sleeps for, between frames.sleeptime__in_seconds = 0.05
     # initialise the display window
-    # flags = pygame.FULLSCREEN | pygame.DOUBLEBUF
     screen = pygame.display.set_mode(SCREEN)
     
     pygame.init()
-    pygame.mixer.init()
-    pygame.mixer.music.load(BACKGROUND_MUSIC)
-    pygame.mixer.music.play(-1) # endless background music
+    #pygame.mixer.init()
+    #pygame.mixer.music.load(BACKGROUND_MUSIC)
+    #pygame.mixer.music.play(-1) # endless background music
 
     while True:
         # main logic of game
