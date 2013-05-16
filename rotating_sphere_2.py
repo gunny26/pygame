@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import pygame
+from pygame import gfxdraw
 import sys
 import math
 import random
@@ -22,6 +23,46 @@ def step_generator(start, stop, steps):
     while value <= stop:
         yield value
         value += step
+
+def randint_generator(minimum, maximum, amount):
+    for i in xrange(amount):
+        yield minimum + int(random.random() * (maximum - minimum))
+
+
+class Starfield(object):
+    """Tree in 3D"""
+
+    def __init__(self, surface, stars, depth, speed=10 ):
+        self.surface = surface
+        self.color1 = (100, 100, 100)
+        self.color2 = (50, 50, 50)
+        self.color3 = (25, 25, 25)
+        self.color4 = (12, 12, 12)
+        self.deg2rad = math.pi / 180
+        self.stars = stars
+        self.depth = depth
+        self.speed = speed
+        self.generate()
+
+    def generate(self):
+        """ generates starfield, z=0 to z=depth """
+        self.stars = [[x, y, z] for x in randint_generator(0, self.surface.get_width(), 20) for y in randint_generator(0, self.surface.get_height(), 20) for z in randint_generator(0, self.depth, 10)]
+
+    def set_color(self, color):
+        self.color = color
+
+    def rotate(self, dx, dy, dz, offset2d=Vec2d(0,0), offset3d=Vec3d(0, 0, 0)):
+        pass
+
+    def update(self, center):
+        for star in self.stars:
+            pygame.gfxdraw.pixel(self.surface, star[0], star[1], self.color1)
+            pygame.gfxdraw.pixel(self.surface, star[0] + 1, star[1], self.color2)
+            pygame.gfxdraw.pixel(self.surface, star[0] + 2, star[1], self.color3)
+            pygame.gfxdraw.pixel(self.surface, star[0] + 3, star[1], self.color4)
+            star[0] -= self.speed + self.depth
+            if star[0] < 0:
+                star[0] += self.surface.get_width()
 
 
 class Tree(object):
@@ -275,11 +316,8 @@ if __name__=='__main__':
             Sphere(surface, (100, 0, 0), Vec3d(1.5, 1.5, 1.5), Vec3d(1, 1, 1)),
             Circle(surface, (100, 0, 0), Vec3d(1.5, -1.5, -1.5), Vec3d(1, 1, 1)),
             Tree(surface, (0, 100, 100), Vec2d(300, 500), 5, 50),
-            Tree(surface, (0, 100, 100), Vec2d(250, 500), 6, 70),
-            Tree(surface, (0, 100, 100), Vec2d(380, 500), 6, 100),
-            Tree(surface, (0, 100, 100), Vec2d(310, 500), 5, 50),
-            Tree(surface, (0, 100, 100), Vec2d(270, 500), 4, 70),
             Tree(surface, (0, 100, 100), Vec2d(330, 500), 2, 100),
+            Starfield(surface, 100, 10)
             )
         clock = pygame.time.Clock()       
  
