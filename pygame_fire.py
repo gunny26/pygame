@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import pygame
 from pygame import gfxdraw
@@ -10,7 +10,7 @@ import time
 from Vec2d import Vec2d
 from Vec3d import Vec3d
 
-FPS = 50
+FPS = 1000
 
 def generator(start, stop, step):
     value = start
