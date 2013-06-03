@@ -10,7 +10,7 @@ import time
 from Vec2d import Vec2d
 from Vec3d import Vec3d
 
-FPS = 50
+FPS = 5000
 
 
 class Vector(object):
@@ -78,6 +78,20 @@ class Vector(object):
         y = position.y - math.cos(self.angle) * self.length
         return(Vec2d(x, y))
 
+    def distance_to(self, otherpos):
+        """return distance between self and otherpos"""
+        dx = (self.x - otherpos.x)
+        dy = (self.y - otherpos.y)
+        dist = math.hypot(dx,dy)
+        return(dist)
+
+    def abs_distance_to(self, otherpos):
+        """return absolute distance between self and otherpos"""
+        dx = (self.x - otherpos.x)
+        dy = (self.y - otherpos.y)
+        dist = abs(math.hypot(dx,dy))
+        return(dist)
+
     @staticmethod
     def vector_between(pos1, pos2):
         """return vector between two points"""
@@ -123,7 +137,6 @@ class Particle(object):
         self.color = pygame.Color(200 - density * 10, 200 - density * 10, 255)
         # initialize things
 
-
     def bounce(self):
         width = self.surface.get_width()
         height = self.surface.get_height()
@@ -162,7 +175,8 @@ class Particle(object):
     def update(self, **kwds):
         self.move()
         self.bounce()
-        pygame.draw.circle(self.surface, self.color, Vec2d(int(self.pos.x), int(self.pos.y)), self.size, 1)
+        dirtyrect = pygame.draw.circle(self.surface, self.color, Vec2d(int(self.pos.x), int(self.pos.y)), self.size, 1)
+        return((dirtyrect,))
 
     def __repr__(self):
         return("Particle(%(surface)s, %(pos)s, %(size)s, %(color)s)" % self.__dict__)
@@ -190,15 +204,25 @@ class Particles(object):
             density = random.randint(0, 20)
             self.particles.append(Particle(self.surface, pos, size, color, Vector(speed, angle), self.gravity, self.drag, self.elasticity, density))
 
-    def update(self):
+    def find_selected(self, pos):
+        for particle in self.particles:
+            if abs(Vector.distance_between(particle.pos, pos)) <= particle.size:
+                particle.direction = Vector(10, math.pi)
+
+    def update(self, clicked):
+        if clicked is not None:
+            self.find_selected(clicked)
+        dirtyrects = []
         for i, particle in enumerate(self.particles):
-            particle.update()
+            dirtyrects.extend(particle.update())
             for other_particle in self.particles[i+1:]:
                 self.collide(particle, other_particle)
+        return(dirtyrects)
 
     def collide(self, p1, p2):
+        """Collission detection and handling method"""
         distance = Vector.distance_between(p1.pos, p2.pos)
-        if distance < p1.size + p2.size:
+        if distance < (p1.size + p2.size):
 
             angle = Vector.angle_between(p1.pos, p2.pos) + 0.5 * math.pi
             total_mass = p1.mass + p2.mass
@@ -224,30 +248,34 @@ class Particles(object):
             p2.pos.x -= math.sin(angle) + overlap
             p2.pos.y += math.cos(angle) + overlap
 
+
 if __name__=='__main__':
 
     try:
         surface = pygame.display.set_mode((600,600))
         pygame.init()
-        origin = (surface.get_width() / 2, surface.get_height() / 2)
-        theta = 1
-        step = math.pi / 180
-        center_x = surface.get_width() / 2
-        center_y = surface.get_height() / 2
-        # Cube( surface, color, center3d, size)
         things = (
             Particles(surface, 20),
             )
         clock = pygame.time.Clock()       
-
         # mark pause state 
         pause = False
+        # fill background
+        surface.fill((0, 0, 0, 255))
+        clicked = None
         while True:
+            # limit to FPS
             clock.tick(FPS)
+            # Event Handling
             events = pygame.event.get()  
             for event in events:  
                 if event.type == pygame.QUIT:  
                     sys.exit(0)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    (mouseX, mouseY) = pygame.mouse.get_pos()
+                    clicked = Vec2d(mouseX, mouseY)
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    clicked = None
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 # print keyinput
@@ -266,14 +294,17 @@ if __name__=='__main__':
                 if keyinput[pygame.K_r]:
                     viewer_distance = 256
                     fov = 2
+            # Update Graphics
+            dirtyrects = []
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for thing in things:
                     if type(thing) == Particles:
-                        thing.update()
+                        dirtyrects.extend(thing.update(clicked))
                         continue
                     else:
-                        thing.update()
-                pygame.display.flip()
+                        dirtyrects.extend(thing.update())
+                pygame.display.update()
+                # pygame.display.flip()
     except KeyboardInterrupt:
         print 'shutting down'
