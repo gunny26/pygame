@@ -3,7 +3,7 @@
 import pygame
 import sys
 
-FPS = 30
+FPS = 15
 TILESIZE = 20
 RES = (800, 425)
 
@@ -83,15 +83,15 @@ class PacMan(object):
                     self.direction = (0, 0)
         newpos = self.rect.move(self.direction)
         # calculate new position
-        print "%s -> %s" % (self.rect, newpos)
         return(newpos)
 
-    def move(self):
+    def move(self, newpos):
         self.rect = newpos
 
     def reset(self):
         self.rect = self.startpos
         self.lifes -= 1
+
 
 class Enemy(object):
     """Enemy Vector Art"""
@@ -103,39 +103,50 @@ class Enemy(object):
         self.direction = (0, 0)
         self.radius = TILESIZE / 2
         self.step = TILESIZE
-        self.food = 0
-        self.lifes = 5
+        # since no player ist set, random walk
+        self.player = None
+        self.walls = None
+        # set possible directions
+        self.directions = ((1, 0), (0, 1), (-1, 0), (0, -1))
+        
+
+    def set_player(self, player):
+        """set player as target"""
+        self.player = player
+
+    def set_walls(self, walls):
+        """set walls as boundaries"""
+        self.walls = walls
 
     def draw(self, surface):
-        self.rect = pygame.draw.circle(surface, (255,255,255), self.rect.center, self.radius, 0)
+        self.rect = pygame.draw.circle(surface, (255, 255, 255), self.rect.center, self.radius, 0)
 
     def update(self, events):
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    self.direction = (-self.step, 0)
-                elif event.key == pygame.K_RIGHT:
-                    self.direction = (self.step, 0)
-                elif event.key == pygame.K_UP:
-                    self.direction = (0, -self.step)
-                elif event.key == pygame.K_DOWN:
-                    self.direction = (0, self.step)
-            elif event.type == pygame.KEYUP:
-                if event.key in (pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN):
-                    self.direction = (0, 0)
-        newpos = self.rect.move(self.direction)
-        # calculate new position
-        print "%s -> %s" % (self.rect, newpos)
-        return(newpos)
+        if self.player is not None:
+            target = self.player.rect
+            dx = target.x - self.rect.x
+            dy = target.y - self.rect.y
+            # normalized direction
+            if abs(dx) > abs(dy):
+                self.direction = (dx/abs(dx), 0)
+            else:
+                self.direction = (0, dy/abs(dy))
+            return(newpos)
+        return(self.rect)
 
-    def move(self):
+    def move(self, others):
+        index = self.directions.index(self.direction)
+        alternatives = list(self.directions[index:] + self.directions[:index])
+        # calculate new position
+        newpos = self.rect.move(alternatives.pop())
+        print "Trying Direction %d : %s" % (index, self.direction)
+        while self.walls.collide(newpos) is True:
+            print "Thas is a wall"
+            newpos = self.rect.move(alternatives.pop())
         self.rect = newpos
 
     def reset(self):
-        self.rect = self.startpos
-        self.lifes -= 1
-
-
+        pass
 
 
 class Wall(object):
@@ -237,6 +248,7 @@ if __name__=='__main__':
         walls = GameObjects(surface)
         foods = GameObjects(surface)
         bombs = GameObjects(surface)
+        enemies = GameObjects(surface)
         player = None
 
         y = 0
@@ -256,11 +268,18 @@ if __name__=='__main__':
                 if char == "p":
                     player = PacMan((x, y))
                     thing = player
+                if char == "e":
+                    thing = Enemy((x,y))
+                    enemies.add(thing)
                 all_objects.add(thing)
                 x += 1
             y += 1
 
         score = Score(player, score_surface)
+        # set target for enemies
+        for enemy in enemies.things:
+            enemy.set_player(player)
+            enemy.set_walls(walls)
 
         clock = pygame.time.Clock()       
         # mark pause state 
@@ -290,7 +309,7 @@ if __name__=='__main__':
                 newpos = player.update(events)
                 # collides player with wall -> dont move
                 if not walls.collide(newpos):
-                    player.move()
+                    player.move(newpos)
                 # collides player with food -> eat them
                 if foods.collide(newpos, True):
                     player.food += 1
@@ -301,6 +320,7 @@ if __name__=='__main__':
                 walls.update(events)
                 foods.update(events)
                 bombs.update(events)
+                enemies.update(events)
                 score.update()
                 pygame.display.update()
                 # pygame.display.flip()
