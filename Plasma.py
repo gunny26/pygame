@@ -1,25 +1,21 @@
 #!/usr/bin/python
 
 import pygame
-from pygame import gfxdraw
 import sys
 import os
 import math
-import random
-import numpy
 from scipy.weave import converters
 import time
-from Vec2d import Vec2d
-from Vec3d import Vec3d
-
-FPS = 5000
-RES = (400, 225)
 
 
 class Plasma(object):
     """Plasma Effect on Surface"""
 
     def __init__(self, surface, scale=1):
+        """
+        (pygame.Surface) surface - surface to draw on
+        (int) scale - scaling factor
+        """
         self.parent_surface = surface
         self.scale = scale
         # initialize things
@@ -32,6 +28,7 @@ class Plasma(object):
         self.initialize()
 
     def initialize(self):
+        """initialize values"""
         max_x = self.surface.get_width()
         max_y = self.surface.get_height()
         # self.data = numpy.zeros((max_y * max_x, 6))
@@ -57,9 +54,11 @@ class Plasma(object):
         assert abs(self.sin(math.pi/4) - 1.0) <= .1
 
     def sin(self, radian):
+        """own sin method for precalculated sin values in list"""
         return(self.sins[int(radian * 2000) % self.steps])
 
     def calculate(self, data):
+        """version with math.sin"""
         t = self.tick
         (x, y, width, height, xx, yy) = data
         v = math.sin(x * 10 + t)
@@ -78,6 +77,7 @@ class Plasma(object):
         self.array2d[xx][yy] = color
  
     def calculate2(self, data):
+        """improved version with own precalculated sin values"""
         t = self.tick
         (x, y, width, height, xx, yy) = data
         x10 = x * 10
@@ -97,68 +97,46 @@ class Plasma(object):
         color.hsla = (h, 100, 50, 50)
         self.array2d[xx][yy] = color
  
-    def update(self, **kwds):
-        map(self.calculate2, self.data)
+    def update(self):
+        """update every frame"""
+        map(self.calculate, self.data)
         pygame.surfarray.blit_array(self.surface, self.array2d)
         pygame.transform.scale(self.surface, self.parent.get_size(), self.parent) 
         self.tick += 5 * math.pi / 180
                 
 
-def main():
+def test():
     try:
-        surface = pygame.display.set_mode(RES)
+        fps = 50
+        surface = pygame.display.set_mode((400, 225))
         pygame.init()
         things = (
-            Plasma(surface),
+            Plasma(surface, scale=2),
             )
         clock = pygame.time.Clock()       
         # mark pause state 
         pause = False
         # fill background
         surface.fill((0, 0, 0, 255))
-        clicked = None
         running = True
-        while True:
+        while running:
             # limit to FPS
-            clock.tick(FPS)
+            clock.tick(fps)
             # Event Handling
             events = pygame.event.get()  
             for event in events:  
                 if event.type == pygame.QUIT:  
                     running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    (mouseX, mouseY) = pygame.mouse.get_pos()
-                    clicked = Vec2d(mouseX, mouseY)
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    clicked = None
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 # print keyinput
                 if keyinput[pygame.K_ESCAPE]:
                     running = False
-                if keyinput[pygame.K_UP]:
-                    viewer_distance += 1
-                if keyinput[pygame.K_DOWN]:
-                    viewer_distance -= 1
-                if keyinput[pygame.K_PLUS]:
-                    fov += .1
-                if keyinput[pygame.K_MINUS]:
-                    fov -= .1
-                if keyinput[pygame.K_p]:
-                    pause = not pause
-                if keyinput[pygame.K_r]:
-                    viewer_distance = 256
-                    fov = 2
             # Update Graphics
-            dirtyrects = []
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for thing in things:
-                    if type(thing) == Plasma:
-                        thing.update(clicked=clicked)
-                        continue
-                    else:
-                        dirtyrects.extend(thing.update())
+                    thing.update()
                 pygame.display.update()
                 # pygame.display.flip()
     except KeyboardInterrupt:
@@ -168,7 +146,7 @@ if __name__ == "__main__":
     import pstats
     import cProfile
     profile = "Plasma.profile"
-    cProfile.runctx( "main()", globals(), locals(), filename=profile)
+    cProfile.runctx( "test()", globals(), locals(), filename=profile)
     s = pstats.Stats(profile)
     s.sort_stats('time')
     s.print_stats(1.0)

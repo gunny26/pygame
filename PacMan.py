@@ -136,13 +136,18 @@ class Enemy(object):
 
     def move(self, others):
         index = self.directions.index(self.direction)
-        alternatives = list(self.directions[index:] + self.directions[:index])
-        # calculate new position
-        newpos = self.rect.move(alternatives.pop())
-        print "Trying Direction %d : %s" % (index, self.direction)
-        while self.walls.collide(newpos) is True:
-            print "Thas is a wall"
-            newpos = self.rect.move(alternatives.pop())
+        alternatives = list(self.directions[index:] + self.directions[:index])[::-1]
+        newpos = self.rect
+        free_way = False
+        while not free_way:
+            print "Trying Direction %d : %s" % (index, self.direction)
+            direction =  alternatives.pop()
+            newpos = self.rect.move((direction[0] * TILESIZE, direction[1] * TILESIZE))
+            if self.walls.collide(newpos) is not True:
+                free_way = True
+                print "free_way found"
+            else:
+                print "There is a wall"
         self.rect = newpos
 
     def reset(self):

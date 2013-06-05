@@ -65,7 +65,8 @@ class Bean(object):
 
     def draw(self):
         if self.vel < 0 :
-            self.beans.remove(self)
+            del self
+            # self.beans.remove(self)
         # original 0.0007
         self.x_off += 0.0007
         self.y_off += 0.0007
