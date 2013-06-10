@@ -1,15 +1,18 @@
 #!/usr/bin/python3
 
+import pyximport
+pyximport.install()
 import pygame
 import sys
 import math
+# cython to speed things up
 # own modules
 from Vec2d import Vec2d
 from Vec3d import Vec3d
 from Sphere import Sphere as Sphere
 from Circle import Circle as Circle
 from Starfield import Starfield as Starfield
-from Fire import Fire as Fire
+from FireX import Fire as Fire
 from Tree import Tree as Tree
 from SinusText import SinusText as SinusText
 from ScrollText import ScrollText as ScrollText
@@ -29,7 +32,7 @@ def main():
         center_y = surface.get_height() / 2
         # Cube( surface, color, center3d, size)
         spheres = (
-            Fire(surface, pygame.Rect(100, 100, 400, 200), 4), 
+            Fire(surface, pygame.Rect(100, 100, 400, 200), 2), 
             Sphere(surface, (100, 0, 0), Vec3d(-1.5, -1.5, -1.5), Vec3d(1, 1, 1)),
             #Sphere(surface, (100, 0, 0), Vec3d(0, 0, 0), Vec3d(1, 1, 1)),
             #Sphere(surface, (100, 0, 0), Vec3d(1.5, 1.5, 1.5), Vec3d(1, 1, 1)),
