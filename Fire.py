@@ -29,6 +29,7 @@ class Fire(object):
         # initialize values
         # scaled down surface
         self.drawsurface = pygame.Surface((self.width, self.height))
+        self.drawsurface.fill((0, 0, 0))
         self.array2d = None
         self.fire = None
         self.palette = None
@@ -85,14 +86,15 @@ class Fire(object):
 
 def test():
     try:
-        fps = 50
+        fps = 500
         surface = pygame.display.set_mode((600, 600))
         pygame.init()
         spheres = (
-            Fire(surface, pygame.Rect(100, 100, 400, 200), 2), 
+            Fire(surface, pygame.Rect(0, 0, 600, 600), 4), 
             )
         clock = pygame.time.Clock()       
         pause = False
+        surface.fill((0, 0, 0))
         while True:
             clock.tick(fps)
             events = pygame.event.get()  
@@ -104,7 +106,6 @@ def test():
                 if keyinput[pygame.K_ESCAPE]:
                     sys.exit(1)
             if pause is not True:
-                surface.fill((0, 0, 0, 255))
                 for thing in spheres:
                     thing.update()
                 pygame.display.flip()
@@ -113,5 +114,13 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
-
+    import sys
+    import os
+    import cProfile
+    import pstats
+    profile = os.path.basename(sys.argv[0].split(".")[0])
+    cProfile.runctx( "test()", globals(), locals(), filename=profile)
+    s = pstats.Stats(profile)
+    s.sort_stats('time')
+    s.print_stats(0.1)
+    os.unlink(profile)
