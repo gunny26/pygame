@@ -10,7 +10,7 @@ SCREEN = (640,480)
 FPS = 0.5
 
 class GraphData:
-    """Holds Data for grafics display with pygame"""
+    """Holds Data for graphics display with pygame"""
     
     def __init__(self, length, height):
         "just __init__"
@@ -124,7 +124,7 @@ def main(top_level_url, url, username, password):
         # print type(csv)
         hadata = csv_to_dict(csv)
         # print hadata
-        data = int(get_data(hadata, "cf_dynamic", "BACKEND", "bout"))
+        data = int(get_data(hadata, "tilak_cf", "BACKEND", "bout"))
         print "lb01 FRONTEND bout:", data
         graph_data.add(data)
         points = graph_data.get_data(int(surface.get_height() / 2))
