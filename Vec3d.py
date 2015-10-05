@@ -30,7 +30,7 @@ class Vec3d(object):
         elif key == 2:
             return self.z
         else:
-            raise IndexError("Invalid subscript "+str(key)+" to Vec3d")
+            raise IndexError("Invalid subscript " + str(key) + " to Vec3d")
  
     def __setitem__(self, key, value):
         if key == 0:
@@ -40,7 +40,7 @@ class Vec3d(object):
         elif key == 2:
             self.z = value
         else:
-            raise IndexError("Invalid subscript "+str(key)+" to Vec3d")
+            raise IndexError("Invalid subscript " + str(key) + " to Vec3d")
  
     # String representaion (for debugging)
     def __repr__(self):
@@ -109,7 +109,6 @@ class Vec3d(object):
             return Vec3d(self.x + other[0], self.y + other[1], self.z + other[2])
         else:
             return Vec3d(self.x + other, self.y + other, self.z + other)
-
     __radd__ = __add__
     
     def __iadd__(self, other):
@@ -135,6 +134,7 @@ class Vec3d(object):
             return Vec3d(self.x - other[0], self.y - other[1], self.z - other[2])
         else:
             return Vec3d(self.x - other, self.y - other, self.z - other)
+
     def __rsub__(self, other):
         if isinstance(other, Vec3d):
             return Vec3d(other.x - self.x, other.y - self.y, other.z - self.z)
@@ -142,6 +142,7 @@ class Vec3d(object):
             return Vec3d(other[0] - self.x, other[1] - self.y, other[2] - self.z)
         else:
             return Vec3d(other - self.x, other - self.y, other - self.z)
+
     def __isub__(self, other):
         if isinstance(other, Vec3d):
             self.x -= other.x
@@ -165,7 +166,6 @@ class Vec3d(object):
             return Vec3d(self.x*other[0], self.y*other[1], self.z*other[2])
         else:
             return Vec3d(self.x*other, self.y*other, self.z*other)
-
     __rmul__ = __mul__
     
     def __imul__(self, other):
@@ -264,7 +264,8 @@ class Vec3d(object):
         return self.x**2 + self.y**2 + self.z**2
  
     def get_length(self):
-        return math.sqrt(self.x**2 + self.y**2 + self.z**2)      
+        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+      
     def __setlength(self, value):
         length = self.get_length()
         self.x *= value/length
@@ -327,6 +328,7 @@ class Vec3d(object):
         if (self.get_length_sqrd() == 0):
             return 0
         return math.degrees(math.atan2(self.y, self.x))
+
     def __setangle_around_z(self, angle_degrees):
         self.x = math.sqrt(self.x**2 + self.y**2)
         self.y = 0
@@ -337,6 +339,7 @@ class Vec3d(object):
         if (self.get_length_sqrd() == 0):
             return 0
         return math.degrees(math.atan2(self.z, self.y))
+
     def __setangle_around_x(self, angle_degrees):
         self.y = math.sqrt(self.y**2 + self.z**2)
         self.z = 0
@@ -347,6 +350,7 @@ class Vec3d(object):
         if (self.get_length_sqrd() == 0):
             return 0
         return math.degrees(math.atan2(self.x, self.z))
+
     def __setangle_around_y(self, angle_degrees):
         self.z = math.sqrt(self.z**2 + self.x**2)
         self.x = 0
