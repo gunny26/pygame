@@ -4,7 +4,7 @@
 import pygame
 from pygame.locals import *
 import random
-
+import time
 
 def load_spritemap(filename, width_count=15, height_count=12):
     sheet = pygame.image.load(filename) #Load the sheet
@@ -53,11 +53,12 @@ class Player(object):
         self.__y = pos[1]
         self.__direction = 0
         self.__seq_pos = self.right.next()
-        self.__step_x = 29
-        self.__step_y = 29
+        self.__step_x = TILE_SIZE
+        self.__step_y = TILE_SIZE
 
+    @property
     def rect(self):
-        return pygame.Rect(self.__x, self.__y, 29, 29)
+        return pygame.Rect(self.__x, self.__y, TILE_SIZE, TILE_SIZE)
 
     def update(self, events):
         for event in events:
@@ -96,14 +97,47 @@ class Bomb(object):
         self.__seq_pos = self.__sequence.next()
         self.__time_left = 100
 
+    @property
+    def time_left(self):
+        return self.__time_left
+
+    def add_time(self, value):
+        self.__time_left += value
+
+    @property
     def rect(self):
-        return pygame.Rect(self.__x, self.__y, 29, 29)
+        return pygame.Rect(self.__x, self.__y, TILE_SIZE, TILE_SIZE)
 
     def update(self, events):
         self.__seq_pos = self.__sequence.next()
-        self.__time_left -= 1
-        if self.__time_left == 0:
-            print "Bomb explodes"
+        if self.__time_left > 0:
+            self.__time_left -= 1
+
+    def draw(self):
+        self.__surface.blit(self.__spritemap[self.__seq_pos], (self.__x + 2, self.__y))
+
+
+class TimeBank(object):
+
+    def __init__(self, surface, spritemap, pos):
+        self.__surface = surface
+        self.__spritemap = spritemap
+        self.__x = pos[0]
+        self.__y = pos[1]
+        self.__sequence = LoopSequence(range(52, 53))
+        self.__seq_pos = self.__sequence.next()
+        self.__value = 100
+
+    @property
+    def value(self):
+        return self.__value
+
+    @property
+    def rect(self):
+        return pygame.Rect(self.__x, self.__y, TILE_SIZE, TILE_SIZE)
+
+    def update(self, events):
+        self.__seq_pos = self.__sequence.next()
 
     def draw(self):
         self.__surface.blit(self.__spritemap[self.__seq_pos], (self.__x + 2, self.__y))
@@ -115,27 +149,72 @@ class Grid(object):
         self.__surface = surface
         self.__x_width = x_width
         self.__y_width = y_width
-        self.__color = pygame.Color(255,255,255,0)
+        self.__color = pygame.Color(255, 255, 255, 0)
 
     def update(self, events):
         pass
 
     def draw(self):
-        for x in range(0, self.__surface.get_width(), 29):
+        for x in range(0, self.__surface.get_width(), self.__x_width):
             pygame.draw.line(self.__surface, self.__color, (x, 0), (x, self.__surface.get_height()))
-        for y in range(0, self.__surface.get_height(), 29):
+        for y in range(0, self.__surface.get_height(), self.__y_width):
             pygame.draw.line(self.__surface, self.__color, (0, y), (self.__surface.get_width(), y))
+
+
+class Highscore(object):
+
+    def __init__(self, surface):
+        self.__surface = surface
+        self.__score = 0
+        #self.__font = pygame.font.SysFont("Times New Roman",25)
+        self.__font = pygame.font.Font("fonts/Completely Nonsense.ttf", 25)
+
+    @property
+    def score(self):
+        return self.__score
+
+    def update(self, events):
+        pass
+
+    def add(self, thing):
+        if isinstance(thing, Bomb):
+            self.__score += 1
+
+    def draw(self):
+        text_img = self.__font.render("Score : %d" % self.__score, True, (255, 255, 255))
+        self.__surface.blit(text_img, (5, 5))
+
+
+class Status(object):
+
+    def __init__(self, surface, things):
+        self.__surface = surface
+        self.__things = things
+        self.__starttime = time.time()
+        self.__font = pygame.font.Font("fonts/Completely Nonsense.ttf", 25)
+
+    def update(self, events):
+        pass
+
+    def draw(self):
+        number_bombs = len([thing for thing in self.__things if isinstance(thing, Bomb)])
+        time_left = max([thing.time_left for thing in self.__things if isinstance(thing, Bomb)])
+        duration = int(time.time() - self.__starttime)
+        text_img = self.__font.render("Time : %d Bombs left : %s" % (time_left, number_bombs), True, (255, 255, 255))
+        self.__surface.blit(text_img, (5, 5))
+
 
 def _message_screen(screen, message):
     screen.fill((120,30,66))
-    font = pygame.font.SysFont("Times New Roman",25)
-    text_img = font.render(message, True, (255,255,255))
+    #font = pygame.font.SysFont("Times New Roman",25)
+    font = pygame.font.Font("fonts/Completely Nonsense.ttf", 25)
+    text_img = font.render(message, True, (255, 255, 255))
     middle_pos = (screen.get_width() / 2 - text_img.get_width() / 2, screen.get_height() / 2 - text_img.get_height() / 2)
     screen.blit(text_img, middle_pos)
     clock = pygame.time.Clock()
     while True:
         # maximal 40 fpsok
-        clock.tick(10)
+        clock.tick(1)
         # events bearbeiten
         events = pygame.event.get()
         for event in events:
@@ -151,9 +230,8 @@ def _message_screen(screen, message):
                     return
         pygame.display.flip()
 
-
 def welcome(screen):
-    _message_screen(screen, "press any key to start")
+    _message_screen(screen, "Catch the Bomb\npress any key to start")
 
 def winner(screen):
     _message_screen(screen, "you won, press any key to restart")
@@ -161,23 +239,55 @@ def winner(screen):
 def looser(screen):
     _message_screen(screen, "you lost, press any key to restart")
 
-def main(screen):
-    head = screen.subsurface(0, 0, screen.get_width(), 29)
-    bottom = screen.subsurface(0, screen.get_height() - 29, screen.get_width(), 29)
-    game = screen.subsurface(0, 29, screen.get_width(), screen.get_height() - 2 * 29)
-    pygame.display.set_caption("Emerald Mine")
-    sprite_array = load_spritemap('Qnp2o.png')
+def timed_message(screen, message, duration):
+    font = pygame.font.Font("fonts/CuppaJoe.ttf", 25)
+    clock = pygame.time.Clock()
+    while True:
+        screen.fill((120,30,66))
+        clock.tick(1)
+        text_img = font.render("%s in %d" % (message, duration), True, (255, 255, 255))
+        middle_pos = (screen.get_width() / 2 - text_img.get_width() / 2, screen.get_height() / 2 - text_img.get_height() / 2)
+        screen.blit(text_img, middle_pos)
+        pygame.display.flip()
+        duration -= 1
+        if duration == 0:
+            return
+
+def main(screen, num_bombs, num_timebanks):
+    head = screen.subsurface(0, 0, screen.get_width(), TILE_SIZE)
+    bottom = screen.subsurface(0, screen.get_height() - TILE_SIZE, screen.get_width(), TILE_SIZE)
+    game = screen.subsurface(0, TILE_SIZE, screen.get_width(), screen.get_height() - 2 * TILE_SIZE)
+    tiles_x = 20
+    tiles_y = 18
+    tiles = range(tiles_x * tiles_y)
+    sprite_array = load_spritemap('gfx/Qnp2o.png')
+    # generate universe of things
     things = []
     bombs = []
-    player = Player(game, sprite_array, (10*29, 10*29))
+    player = Player(game, sprite_array, (10 * TILE_SIZE, 10 * TILE_SIZE))
     things.append(player)
-    things.append(Grid(game, 29, 29))
-    for i in range(5):
-        bomb = Bomb(game, sprite_array, (int(random.random() * 19) * 29, int(random.random() * 19) *29))
+    things.append(Grid(game, TILE_SIZE, TILE_SIZE))
+    for i in range(num_bombs):
+        pos = int(random.random() * len(tiles))
+        x = (tiles[pos] % tiles_x) * TILE_SIZE
+        y = (int(tiles[pos] / tiles_y)) * TILE_SIZE
+        print "positioned BOMB at index %d position %s, %s" % (pos, x, y)
+        bomb = Bomb(game, sprite_array, (x, y))
         things.append(bomb)
         bombs.append(bomb)
+        tiles.remove(pos)
+    for i in range(num_timebanks):
+        pos = int(random.random() * len(tiles))
+        x = (tiles[pos] % tiles_x) * TILE_SIZE
+        y = (int(tiles[pos] / tiles_y)) * TILE_SIZE
+        print "positioned TimeBank at index %d position %s, %s" % (pos, x, y)
+        timebank = TimeBank(game, sprite_array, (x, y))
+        things.append(timebank)
+    highscore = Highscore(head)
+    things.append(highscore)
+    status = Status(bottom, things)
+    things.append(status)
     clock = pygame.time.Clock()
-    font = pygame.font.SysFont("Times New Roman",25)
     while True:
         # maximal 40 fpsok
         clock.tick(10)
@@ -192,38 +302,58 @@ def main(screen):
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     return
-        # den Bildschirm mit einer Hintergrundfarbe füllen und so
-        # gleichzeitig das alte Bild löschen
-        screen.fill((120,30,66))
-        ## Über die Gruppe alle Sprites updaten und dann blitten
-        text_img = font.render("This is header line", True, (255,255,255))
-        head.blit(text_img, (5,5))
-        text_img = font.render("This is bottom line", True, (255,255,255))
-        bottom.blit(text_img, (5,5))
+        # blank
+        screen.fill((100, 100, 100))
+        # update events
         for thing in things:
             thing.update(events)
-        for bomb in bombs:
-            if bomb.rect().colliderect(player.rect()):
-                print "player intersects with bomb, remove this bomb"
+        # collision detection and status updates
+        for bomb in [thing for thing in things if isinstance(thing, Bomb)]:
+            if bomb.time_left == 0:
+                print "bomb at %s explodes" % str(bomb.rect)
+                bombs.remove(bomb)
+                things.remove(bomb)
+            if bomb.rect.colliderect(player.rect):
+                print "player intersects with bomb at %s, remove this" % str(bomb.rect)
+                highscore.add(bomb)
                 bombs.remove(bomb)
                 things.remove(bomb)
                 print "there are %d bombs left" % len(bombs)
+        for timebank in [thing for thing in things if isinstance(thing, TimeBank)]:
+            if timebank.rect.colliderect(player.rect):
+                print "player intersects with timebank at %s, remove this" % str(bomb.rect)
+                [bomb.add_time(timebank.value) for bomb in things if isinstance(bomb, Bomb)]
+                things.remove(timebank)
         if len(bombs) == 0:
-            print "all bombs are removed, you win"
-            return "winner"
-        # is player on bomb
+            print "all bombs are removed, score %s " % highscore.score
+            if highscore.score == num_bombs:
+                return "winner"
+            else:
+                return "looser"
+        # draw everything
         for thing in things:
             thing.draw()
-        # alles aufs Fenster flippen
+        # flip
         pygame.display.flip()
 
 if __name__ == '__main__':
     pygame.init()
-    pygame.display.set_caption("Emerald Mine")
-    screen = pygame.display.set_mode((29 * 20, 29 * 20))
+    pygame.display.set_caption("catch the bombs")
+    TILE_SIZE = 29
+    TILES_X = 20
+    TILES_Y = 20
+    size = (TILE_SIZE * TILES_X, TILE_SIZE * TILES_Y)
+    print "screen size %s" % str(size)
+    screen = pygame.display.set_mode(size)
     welcome(screen)
-    result = main(screen)
-    if result == "winner":
+    num_bombs = 5
+    num_timebanks = 5
+    timed_message(screen, "Get ready for start", 5)
+    result = main(screen, num_bombs, num_timebanks)
+    while result == "winner":
         winner(screen)
-    else:
-        looser(screen)
+        timed_message(screen, "Get Ready for next level", 5)
+        num_bombs += 1
+        num_timebanks -= 1
+        result = main(screen, num_bombs, num_timebanks)
+    looser(screen)
