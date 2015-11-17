@@ -123,8 +123,9 @@ def main(top_level_url, url, username, password):
         # print csv
         # print type(csv)
         hadata = csv_to_dict(csv)
+        print hadata
         # print hadata
-        data = int(get_data(hadata, "tilak_cf", "BACKEND", "bout"))
+        data = int(get_data(hadata, "static", "BACKEND", "bout"))
         print "lb01 FRONTEND bout:", data
         graph_data.add(data)
         points = graph_data.get_data(int(surface.get_height() / 2))
