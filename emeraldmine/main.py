@@ -2,11 +2,20 @@
 # coding: utf8
 
 import pygame
-from pygame.locals import *
+#from pygame.locals import *
 import random
 import time
 
+BACKGROUND = pygame.Color(120, 30, 66)
+TILE_SIZE = 29
+TILES_X = 20
+TILES_Y = 20
+ 
+
 def load_spritemap(filename, width_count=15, height_count=12):
+    """
+    load tilemap and store every tile in array
+    """
     sheet = pygame.image.load(filename) #Load the sheet
     print "loaded spritemap dimesion : %s / %s" % (sheet.get_width(), sheet.get_height())
     x_step = sheet.get_width() / width_count
@@ -25,6 +34,10 @@ def load_spritemap(filename, width_count=15, height_count=12):
 
 
 class LoopSequence(object):
+    """
+    loop endlessly over given sequence
+    if end is reached, begin from the first one
+    """
 
     def __init__(self, sequence):
         self.__sequence = sequence
@@ -41,6 +54,9 @@ class LoopSequence(object):
 
 
 class Player(object):
+    """
+    main character
+    """
 
     left = LoopSequence(range(7, 12))
     right = LoopSequence(range(1, 5))
@@ -62,24 +78,26 @@ class Player(object):
 
     def update(self, events):
         for event in events:
-            if event.type == KEYDOWN:
-                if event.key == K_LEFT:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
                     self.__x -= self.__step_x
                     self.__seq_pos = self.right.next()
-                elif event.key == K_RIGHT:
+                elif event.key == pygame.K_RIGHT:
                     self.__x += self.__step_x
                     self.__seq_pos = self.left.next()
-                elif event.key == K_UP:
+                elif event.key == pygame.K_UP:
                     self.__y -= self.__step_y
                     self.__seq_pos = self.up.next()
-                elif event.key == K_DOWN:
+                elif event.key == pygame.K_DOWN:
                     self.__y += self.__step_y
                     self.__seq_pos = self.up.next()
-            elif event.type == KEYUP:
-                if event.key in (K_LEFT, K_RIGHT):
-                    self.x = 0
-                elif event.key in (K_UP, K_DOWN):
-                    self.y = 0
+            elif event.type == pygame.KEYUP:
+                if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                    pass
+                    #self.__x = 0
+                elif event.key in (pygame.K_UP, pygame.K_DOWN):
+                    pass
+                    #self.__y = 0
             #print self.__x, self.__y
 
     def draw(self):
@@ -87,6 +105,10 @@ class Player(object):
 
 
 class Bomb(object):
+    """
+    targets of player, these object must be collected,
+    before they are exploding
+    """
 
     def __init__(self, surface, spritemap, pos):
         self.__surface = surface
@@ -118,6 +140,9 @@ class Bomb(object):
 
 
 class TimeBank(object):
+    """
+    with this object player can get some extra time
+    """
 
     def __init__(self, surface, spritemap, pos):
         self.__surface = surface
@@ -144,6 +169,9 @@ class TimeBank(object):
 
 
 class Grid(object):
+    """
+    debug object to display TILE grid
+    """
 
     def __init__(self, surface, x_width, y_width):
         self.__surface = surface
@@ -162,6 +190,9 @@ class Grid(object):
 
 
 class Highscore(object):
+    """
+    display score on top of level
+    """
 
     def __init__(self, surface):
         self.__surface = surface
@@ -186,6 +217,9 @@ class Highscore(object):
 
 
 class Status(object):
+    """
+    display Status Line in bottom of level
+    """
 
     def __init__(self, surface, things):
         self.__surface = surface
@@ -204,13 +238,16 @@ class Status(object):
         self.__surface.blit(text_img, (5, 5))
 
 
-def _message_screen(screen, message):
-    screen.fill((120,30,66))
+def _message_screen(surface, message):
+    """
+    display fullscreen message, until key pressed
+    """
+    surface.fill(BACKGROUND)
     #font = pygame.font.SysFont("Times New Roman",25)
     font = pygame.font.Font("fonts/Completely Nonsense.ttf", 25)
     text_img = font.render(message, True, (255, 255, 255))
-    middle_pos = (screen.get_width() / 2 - text_img.get_width() / 2, screen.get_height() / 2 - text_img.get_height() / 2)
-    screen.blit(text_img, middle_pos)
+    middle_pos = (surface.get_width() / 2 - text_img.get_width() / 2, surface.get_height() / 2 - text_img.get_height() / 2)
+    surface.blit(text_img, middle_pos)
     clock = pygame.time.Clock()
     while True:
         # maximal 40 fpsok
@@ -219,44 +256,50 @@ def _message_screen(screen, message):
         events = pygame.event.get()
         for event in events:
         # um möglichst einfach Positionen für die Spielobjekte zu sammeln:
-            if event.type == KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 return
-            if event.type == MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 print event.pos
-            if event.type == QUIT:
+            if event.type == pygame.QUIT:
                 return
-            elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
                     return
         pygame.display.flip()
 
-def welcome(screen):
-    _message_screen(screen, "Catch the Bomb\npress any key to start")
+def welcome(surface):
+    _message_screen(surface, "Catch the Bomb\npress any key to start")
 
-def winner(screen):
-    _message_screen(screen, "you won, press any key to restart")
+def winner(surface):
+    _message_screen(surface, "you won, press any key to restart")
 
-def looser(screen):
-    _message_screen(screen, "you lost, press any key to restart")
+def looser(surface):
+    _message_screen(surface, "you lost, press any key to restart")
 
-def timed_message(screen, message, duration):
+def timed_message(surface, message, duration):
+    """
+    display fullscreen message for some amount of time
+    """
     font = pygame.font.Font("fonts/CuppaJoe.ttf", 25)
     clock = pygame.time.Clock()
     while True:
-        screen.fill((120,30,66))
+        surface.fill(BACKGROUND)
         clock.tick(1)
         text_img = font.render("%s in %d" % (message, duration), True, (255, 255, 255))
-        middle_pos = (screen.get_width() / 2 - text_img.get_width() / 2, screen.get_height() / 2 - text_img.get_height() / 2)
-        screen.blit(text_img, middle_pos)
+        middle_pos = (surface.get_width() / 2 - text_img.get_width() / 2, surface.get_height() / 2 - text_img.get_height() / 2)
+        surface.blit(text_img, middle_pos)
         pygame.display.flip()
         duration -= 1
         if duration == 0:
             return
 
-def main(screen, num_bombs, num_timebanks):
-    head = screen.subsurface(0, 0, screen.get_width(), TILE_SIZE)
-    bottom = screen.subsurface(0, screen.get_height() - TILE_SIZE, screen.get_width(), TILE_SIZE)
-    game = screen.subsurface(0, TILE_SIZE, screen.get_width(), screen.get_height() - 2 * TILE_SIZE)
+def level(surface, num_bombs, num_timebanks):
+    """
+    Main level logic
+    """
+    head = surface.subsurface(0, 0, surface.get_width(), TILE_SIZE)
+    bottom = surface.subsurface(0, surface.get_height() - TILE_SIZE, surface.get_width(), TILE_SIZE)
+    game = surface.subsurface(0, TILE_SIZE, surface.get_width(), surface.get_height() - 2 * TILE_SIZE)
     tiles_x = 20
     tiles_y = 18
     tiles = range(tiles_x * tiles_y)
@@ -295,15 +338,15 @@ def main(screen, num_bombs, num_timebanks):
         events = pygame.event.get()
         for event in events:
         # um möglichst einfach Positionen für die Spielobjekte zu sammeln:
-            if event.type == MOUSEBUTTONDOWN:
-                print event.pos
-            if event.type == QUIT:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print "Mouse clikc on position ", event.pos
+            if event.type == pygame.QUIT:
                 return
-            elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
                     return
         # blank
-        screen.fill((100, 100, 100))
+        surface.fill(BACKGROUND)
         # update events
         for thing in things:
             thing.update(events)
@@ -336,12 +379,9 @@ def main(screen, num_bombs, num_timebanks):
         # flip
         pygame.display.flip()
 
-if __name__ == '__main__':
+def main():
     pygame.init()
     pygame.display.set_caption("catch the bombs")
-    TILE_SIZE = 29
-    TILES_X = 20
-    TILES_Y = 20
     size = (TILE_SIZE * TILES_X, TILE_SIZE * TILES_Y)
     print "screen size %s" % str(size)
     screen = pygame.display.set_mode(size)
@@ -349,11 +389,15 @@ if __name__ == '__main__':
     num_bombs = 5
     num_timebanks = 5
     timed_message(screen, "Get ready for start", 5)
-    result = main(screen, num_bombs, num_timebanks)
+    result = level(screen, num_bombs, num_timebanks)
     while result == "winner":
         winner(screen)
         timed_message(screen, "Get Ready for next level", 5)
         num_bombs += 1
         num_timebanks -= 1
-        result = main(screen, num_bombs, num_timebanks)
+        result = level(screen, num_bombs, num_timebanks)
     looser(screen)
+
+
+if __name__ == '__main__':
+    main()

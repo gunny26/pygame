@@ -3,7 +3,7 @@
 import pygame
 import sys
 
-FPS = 15
+FPS = 10
 TILESIZE = 20
 RES = (800, 425)
 
