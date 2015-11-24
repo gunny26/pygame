@@ -7,12 +7,11 @@ import random
 import time
 
 BACKGROUND = pygame.Color(120, 30, 66)
-TILE_SIZE = 29
+TILE_SIZE = 32
 TILES_X = 20
 TILES_Y = 20
- 
 
-def load_spritemap(filename, width_count=15, height_count=12):
+def load_spritemap_old(filename, width_count=16, height_count=12):
     """
     load tilemap and store every tile in array
     """
@@ -25,6 +24,26 @@ def load_spritemap(filename, width_count=15, height_count=12):
     for y in range(0, sheet.get_height(), y_step):
         for x in range(0, sheet.get_width(), x_step):
             sheet.set_clip(pygame.Rect(x, y, x_step, y_step)) #Locate the sprite you want
+            sprite = sheet.subsurface(sheet.get_clip())
+            #print sprite.get_width(), sprite.get_height()
+            sprite_array.append(sheet.subsurface(sheet.get_clip())) #Extract the sprite you want
+            #backdrop = pygame.Rect(0, 0, SCREEN_X, SCREEN_Y) #Create the whole screen so you can draw on it
+            #screen.blit(draw_me,backdrop) #'Blit' on the backdrop
+    return sprite_array
+
+def load_spritemap(filename, offset, tile_size, dimension):
+    """
+    load tilemap and store every tile in array
+    """
+    sheet = pygame.image.load(filename) #Load the sheet
+    print "loaded spritemap dimesion : %s / %s" % (sheet.get_width(), sheet.get_height())
+    print "offset %s x %s" % offset
+    print "single sprite dimension %s x %s" % tile_size
+    print "dimension %s x %s" % dimension
+    sprite_array = []
+    for y in range(offset[1], offset[1] + tile_size[1] * dimension[1], tile_size[1]):
+        for x in range(offset[0], offset[0] + tile_size[0] * dimension[0], tile_size[0]):
+            sheet.set_clip(pygame.Rect(x, y, tile_size[0], tile_size[1])) #Locate the sprite you want
             sprite = sheet.subsurface(sheet.get_clip())
             #print sprite.get_width(), sprite.get_height()
             sprite_array.append(sheet.subsurface(sheet.get_clip())) #Extract the sprite you want
@@ -58,13 +77,14 @@ class Player(object):
     main character
     """
 
-    left = LoopSequence(range(7, 12))
-    right = LoopSequence(range(1, 5))
-    up = LoopSequence(range(36, 40))
+    down = LoopSequence(range(0, 3))
+    left = LoopSequence(range(4, 7))
+    up = LoopSequence(range(8, 11))
+    right = LoopSequence(range(12, 15))
 
-    def __init__(self, surface, spritemap, pos):
+    def __init__(self, surface, pos):
         self.__surface = surface
-        self.__spritemap = spritemap
+        self.__spritemap = load_spritemap('gfx/Map.png', (0,0), (32, 32), (4, 4))
         self.__x = pos[0]
         self.__y = pos[1]
         self.__direction = 0
@@ -81,16 +101,16 @@ class Player(object):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     self.__x -= self.__step_x
-                    self.__seq_pos = self.right.next()
+                    self.__seq_pos = self.left.next()
                 elif event.key == pygame.K_RIGHT:
                     self.__x += self.__step_x
-                    self.__seq_pos = self.left.next()
+                    self.__seq_pos = self.right.next()
                 elif event.key == pygame.K_UP:
                     self.__y -= self.__step_y
                     self.__seq_pos = self.up.next()
                 elif event.key == pygame.K_DOWN:
                     self.__y += self.__step_y
-                    self.__seq_pos = self.up.next()
+                    self.__seq_pos = self.down.next()
             elif event.type == pygame.KEYUP:
                 if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     pass
@@ -110,12 +130,12 @@ class Bomb(object):
     before they are exploding
     """
 
-    def __init__(self, surface, spritemap, pos):
+    def __init__(self, surface, pos):
         self.__surface = surface
-        self.__spritemap = spritemap
+        self.__spritemap = load_spritemap('gfx/bombmap.png', (0,0), (32, 32), (4, 1))
         self.__x = pos[0]
         self.__y = pos[1]
-        self.__sequence = LoopSequence(range(31, 36))
+        self.__sequence = LoopSequence(range(0, 3))
         self.__seq_pos = self.__sequence.next()
         self.__time_left = 100
 
@@ -144,12 +164,12 @@ class TimeBank(object):
     with this object player can get some extra time
     """
 
-    def __init__(self, surface, spritemap, pos):
+    def __init__(self, surface, pos):
         self.__surface = surface
-        self.__spritemap = spritemap
+        self.__spritemap = load_spritemap('gfx/Map.png', (0,280), (32, 32), (4, 4))
         self.__x = pos[0]
         self.__y = pos[1]
-        self.__sequence = LoopSequence(range(52, 53))
+        self.__sequence = LoopSequence(range(8, 11))
         self.__seq_pos = self.__sequence.next()
         self.__value = 100
 
@@ -303,11 +323,11 @@ def level(surface, num_bombs, num_timebanks):
     tiles_x = 20
     tiles_y = 18
     tiles = range(tiles_x * tiles_y)
-    sprite_array = load_spritemap('gfx/Qnp2o.png')
+    #sprite_array = load_spritemap('gfx/Map.png')
     # generate universe of things
     things = []
     bombs = []
-    player = Player(game, sprite_array, (10 * TILE_SIZE, 10 * TILE_SIZE))
+    player = Player(game, (10 * TILE_SIZE, 10 * TILE_SIZE))
     things.append(player)
     things.append(Grid(game, TILE_SIZE, TILE_SIZE))
     for i in range(num_bombs):
@@ -315,7 +335,7 @@ def level(surface, num_bombs, num_timebanks):
         x = (tiles[pos] % tiles_x) * TILE_SIZE
         y = (int(tiles[pos] / tiles_y)) * TILE_SIZE
         print "positioned BOMB at index %d position %s, %s" % (pos, x, y)
-        bomb = Bomb(game, sprite_array, (x, y))
+        bomb = Bomb(game, (x, y))
         things.append(bomb)
         bombs.append(bomb)
         tiles.remove(pos)
@@ -324,7 +344,7 @@ def level(surface, num_bombs, num_timebanks):
         x = (tiles[pos] % tiles_x) * TILE_SIZE
         y = (int(tiles[pos] / tiles_y)) * TILE_SIZE
         print "positioned TimeBank at index %d position %s, %s" % (pos, x, y)
-        timebank = TimeBank(game, sprite_array, (x, y))
+        timebank = TimeBank(game, (x, y))
         things.append(timebank)
     highscore = Highscore(head)
     things.append(highscore)
