@@ -67,7 +67,7 @@ def test():
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
-                    sys.exit(1)
+                    sys.exit(0)
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 mandelbrot.update()

@@ -1,7 +1,8 @@
 #!/usr/bin/python
 #
-
+from __future__ import print_function
 import sys
+import time
 import pygame
 
 class Mandelbrot(object):
@@ -16,10 +17,11 @@ class Mandelbrot(object):
         self.width = self.surface.get_width()
         self.height = self.surface.get_height()
         self.array2d = pygame.surfarray.array2d(self.surface)
-        self.initialize()
-        print "done" 
+        starttime = time.time()
+        self.version2()
+        print("done in %0.3f" % (time.time() - starttime))
 
-    def initialize(self, left=-2.1, right=0.7, bottom=-1.2, top=1.2, maxiter=30):
+    def version1(self, left=-2.1, right=0.7, bottom=-1.2, top=1.2, maxiter=30):
         """
         initialize pixelarray with color value,
         classical approach, really, really slow
@@ -27,7 +29,7 @@ class Mandelbrot(object):
         x = xx = y = cx = cy = betrag = x2 = y2 = None
         iteration = hx = hy = None
         itermax = 255		# how many iterations to do
-        magnify=1.0		# no magnification
+        magnify = 1.0		# no magnification
         stepy = (top - bottom) / self.height
         stepx = (right - left) / self.width
         cy = bottom
@@ -37,36 +39,88 @@ class Mandelbrot(object):
                 x = cx
                 y = cy
                 iteration = 0
-                betrag = 0 
+                betrag = 0
                 while (iteration < itermax) and (betrag < maxiter):
                     x2 = x * x
                     y2 = y * y
                     betrag = x2 + y2
-                    xx = x2 - y2 + cx
                     y = 2.0 * x * y + cy
-                    x = xx
+                    x = x2 - y2 + cx
+                    # x = xx
                     iteration += 1
                 self.array2d[hx][hy] = pygame.Color(iteration, iteration, iteration)
                 cx = cx + stepx
             cy = cy + stepy
 
+    def version2(self, left=-2.1, right=0.7, bottom=-1.2, top=1.2, maxiter=30):
+        """
+        initialize pixelarray with color value,
+        classical approach, really, really slow
+
+        new approach, interate up to max_interations
+        skip points who are above interation
+        """
+        itermax = 255		# how many iterations to do
+        stepy = (top - bottom) / float(self.height)
+        stepx = (right - left) / float(self.width)
+        length = self.height * self.width
+        workmap = [] # state after avery interation
+        starttime = time.time()
+        cy = bottom
+        index = 0
+        for y in range(self.height):
+            cx = left
+            for x in range(self.width):
+                workmap.append([cx, cy, 0.0, cx, cy, 255, index])
+                pixelmap.append(255)
+                cx += stepx
+                index += 1
+            cy += stepy
+        print("initializing in %0.3f" % (time.time() - starttime))
+        starttime = time.time()
+        worklist = range(length)
+        for iteration in range(itermax):
+            newmap = []
+            for value in workmap:
+                cx, cy, _, x, y, _, idx = value
+                # cx, cy, _, x, y, _, index = workmap[idx]
+                x2 = x * x
+                y2 = y * y
+                newmap.append([cx, cy, x2 + y2, x2 - y2 + cx, 2.0 * x * y + cy, iteration, idx])
+                #workmap[idx][2] = x2 + y2
+                #workmap[idx][3] = x2 - y2 + cx
+                #workmap[idx][4] = 2.0 * x * y + cy
+                #workmap[idx][5] = iteration
+            # filter
+            workmap = [value for value in newmap if value[2] < 31]
+            if len(workmap) == 0:
+                break
+        print("calculation in %0.3f" % (time.time() - starttime))
+        starttime = time.time()
+        for index, data in enumerate(workmap):
+            x = index % self.width
+            y = int(index / self.width)
+            iteration = data[5]
+            self.array2d[x][y] = pygame.Color(iteration, iteration, iteration)
+        print("to screen in %0.3f" % (time.time() - starttime))
+
     def update(self):
         """blit pixelarray to surface"""
         pygame.surfarray.blit_array(self.surface, self.array2d)
 
-def test():
+def main():
     try:
-        fps = 1
-        surface = pygame.display.set_mode((800, 600))
-        pygame.init()
+        fps = 25
+        surface = pygame.display.set_mode((200, 200))
+        # pygame.init()
         mandelbrot = Mandelbrot(surface)
-        clock = pygame.time.Clock()       
+        clock = pygame.time.Clock()
         pause = False
         while True:
             clock.tick(fps)
-            events = pygame.event.get()  
-            for event in events:  
-                if event.type == pygame.QUIT:  
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
                     sys.exit(0)
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
@@ -77,9 +131,9 @@ def test():
                 mandelbrot.update()
                 pygame.display.flip()
     except KeyboardInterrupt:
-        print 'shutting down'
+        print("shutting down")
 
 
 if __name__ == '__main__':
-    test()
+    main()
 
