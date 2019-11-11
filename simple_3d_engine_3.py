@@ -455,7 +455,7 @@ if __name__=='__main__':
                 # drawing triangles to show from back to front
                 draw_filled_triangle(surface, color, t_p)
                 draw_triangle(surface, WHITE, t_p)
-
+            print(clock.get_fps()) # showing FPS
             pygame.display.flip()
     except KeyboardInterrupt:
         print("shutting down")
