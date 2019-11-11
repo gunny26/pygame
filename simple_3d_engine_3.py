@@ -166,6 +166,9 @@ class Mesh:
     def __init__(self, triangles):
         self.triangles = triangles
 
+    def __str__(self):
+        return(f"mesh consists of {len(self.triangles)}")
+
     def __getitem__(self, index):
         return self.triangles[index]
 
@@ -383,10 +386,11 @@ if __name__=='__main__':
         # define Camera position
         camera = Vec4d(0, 0, 0, 0)
         # define light direction
-        light = Vec4d(1, 2, 3, 0)
+        light = Vec4d(0, 0, 3, 0)
         #light_direction = Vec4d(0, 0, -1, 0).normalize()
         # load from file, the self defined cube has some error
-        model = Mesh.from_file("obj_models/teapot.obj")
+        model = Mesh.from_file("obj_models/sphere.obj")
+        print(model)
         model_position = Vec4d(0, 0, 5, 0)
         while True:
             clock.tick(FPS)
@@ -430,7 +434,7 @@ if __name__=='__main__':
                 # calculate dot product of normal to light direction
                 # to get the correct shadings
                 light_v = (t_p.v1 - light).normalize() # light vector
-                lum = 128 * light_v.dot(t_normal) + 128
+                lum = max(255 * light_v.dot(t_normal), 0)
                 color = (lum, lum, lum)
 
                 # shift to positive values
@@ -454,8 +458,7 @@ if __name__=='__main__':
             for t_p, color in sorted(raster_triangles):
                 # drawing triangles to show from back to front
                 draw_filled_triangle(surface, color, t_p)
-                draw_triangle(surface, WHITE, t_p)
-            print(clock.get_fps()) # showing FPS
+                #draw_triangle(surface, WHITE, t_p)
             pygame.display.flip()
     except KeyboardInterrupt:
         print("shutting down")
