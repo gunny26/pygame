@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# cython: language_level=3, boundscheck=False
 """
 simple 3d engine written in pure python and pygame for graphics display
 
@@ -17,12 +18,27 @@ first version - projection, triangles
 second version - shading, loading of obj files, refactoring
 third version - refactoring, texture
 """
-import math
 # non std
 
-class Vec4d:
+cdef extern from "math.h":
+    double sin(double x)
 
-    def __init__(self, x, y, z, w=0.0):
+cdef extern from "math.h":
+    double cos(double x)
+
+cdef extern from "math.h":
+    double sqrt(double x)
+
+
+cdef class Vec4d:
+
+    cdef public double x
+    cdef public double y
+    cdef public double z
+    cdef public double w
+    cdef public double data[4]
+
+    def __init__(self, double x, double y, double z, double w=0.0):
     # also store list of values):
         """
         vector in 3 dimensional space, additional w component
@@ -32,7 +48,7 @@ class Vec4d:
         self.z = z
         self.w = w
         # also store list of values
-        self._data = [self.x, self.y, self.z, self.w]
+        self.data = [self.x, self.y, self.z, self.w]
 
     def __add__(self, other):
         return Vec4d(
@@ -51,32 +67,31 @@ class Vec4d:
             )
 
     def __getitem__(self, index):
-        return self._data[index]
+        return self.data[index]
 
-    def length3(self):
-        """
-        return length of verctor, MISSING w part
-        """
-        return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+    def __div__(self, double factor):
+        return Vec4d(self.x / factor, self.y / factor, self.z / factor, self.w / factor)
 
-    def length(self):
+    cdef double length(self):
         """
         return length of verctor, including w part
         """
-        return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w)
+        return sqrt(self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w)
 
-    def cross(self, other):
+    cpdef Vec4d cross(self, Vec4d other):
         """
         return the cross product of self and other as Vec4d
         :returns Vec4d:
         """
-        return Vec4d(
+        cdef Vec4d ret
+        ret = Vec4d(
             self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
             self.x * other.y - self.y * other.x
             )
+        return ret
 
-    def normalize(self):
+    cpdef Vec4d normalize(self):
         """
         return normalized version of Vec4d
         :returns Vec4d:
@@ -84,7 +99,7 @@ class Vec4d:
         length = self.length()
         return Vec4d(self.x / length, self.y / length, self.z / length, self.w / length)
 
-    def dot(self, other):
+    cpdef double dot(self, Vec4d other):
         """
         return dot product of self and ohter Vec4d
         TODO: what todo with this w component?
@@ -93,9 +108,14 @@ class Vec4d:
         return self.x * other.x + self.y * other.y + self.z * other.z
 
 
-class Triangle:
+cdef class Triangle:
 
-    def __init__(self, v1, v2, v3):
+    cdef public Vec4d v1
+    cdef public Vec4d v2
+    cdef public Vec4d v3
+    cdef public points
+
+    def __init__(self, Vec4d v1, Vec4d v2, Vec4d v3):
         """
         :params v1 <Vec4d>: first vertex
         :params v2 <Vec4d>: second vertex
@@ -109,25 +129,6 @@ class Triangle:
     def __getitem__(self, index):
         return self.points[index]
 
-    def normal(self):
-        """
-        return normal vector fr this triangle
-        :returns Vec4d:
-        """
-        return (self.v2 - self.v1).cross(self.v3 - self.v1)
-
-    def translate(self, vec4d):
-        """
-        translate this triangle
-        :params vec4d:
-        :returns Triangle:
-        """
-        return Triangle(*[
-            self.v1 + vec4d,
-            self.v2 + vec4d,
-            self.v3 + vec4d
-        ])
-
     def __mul__(self, matrix):
         """
         multiply self with matrix, must be 4 x 4
@@ -139,9 +140,6 @@ class Triangle:
             matrix * self.v2,
             matrix * self.v3
         ])
-
-    def avg_z(self):
-        return (self.v1.z + self.v2.z + self.v3.z) / 3
 
     def __lt__(self, other):
         """
@@ -155,6 +153,31 @@ class Triangle:
         """
         return self.avg_z() < other.avg_z()
 
+    cpdef double avg_z(self):
+        """
+        return average z of triangle
+        :returns double:
+        """
+        return (self.v1.z + self.v2.z + self.v3.z) / 3
+
+    cpdef Vec4d normal(self):
+        """
+        return normal vector fr this triangle
+        :returns Vec4d:
+        """
+        return ((self.v2 - self.v1).cross(self.v3 - self.v1)).normalize()
+
+    cpdef Triangle translate(self, Vec4d vec4d):
+        """
+        translate this triangle
+        :params vec4d:
+        :returns Triangle:
+        """
+        return Triangle(*[
+            self.v1 + vec4d,
+            self.v2 + vec4d,
+            self.v3 + vec4d
+        ])
 
 
 class Mesh:
@@ -188,8 +211,11 @@ class Mesh:
                     triangles.append(Triangle(vertices[t_vertices[0]], vertices[t_vertices[1]], vertices[t_vertices[2]]))
             return Mesh(triangles)
 
-class Matrix4x4:
+cdef class Matrix4x4:
     """Helper class for matrix operations"""
+
+
+    cdef public double vecs[4][4]
 
     def __init__(self, vecs):
         """
@@ -199,8 +225,8 @@ class Matrix4x4:
 
     def __str__(self):
         output = ""
-        for vec in self.vecs:
-            output += "| " + " | ".join((f"{value:22}" for value in vec)) + " |\n"
+        #for vec in self.vecs:
+        #    output += "| " + " | ".join((f"{value:22}" for value in vec)) + " |\n"
         return output
 
     def __getitem__(self, index):
@@ -273,7 +299,7 @@ class Matrix4x4:
         ])
 
     @staticmethod
-    def get_rot_x(f_theta):
+    def get_rot_x(double f_theta):
         """
         get rotation matrix around x
         :params f_theta <float>:
@@ -281,35 +307,35 @@ class Matrix4x4:
         """
         return Matrix4x4([
             [ 1,                 0,                  0, 0 ],
-            [ 0, math.cos(f_theta), -math.sin(f_theta), 0 ],
-            [ 0, math.sin(f_theta),  math.cos(f_theta), 0 ],
+            [ 0, cos(f_theta), -sin(f_theta), 0 ],
+            [ 0, sin(f_theta),  cos(f_theta), 0 ],
             [ 0,                 0,                  0, 1 ]
         ])
 
     @staticmethod
-    def get_rot_y(f_theta):
+    def get_rot_y(double f_theta):
         """
         get rotation matrix around y
         :params f_theta <float>:
         :returns <Matrix4x4:
         """
         return Matrix4x4([
-            [  math.cos(f_theta), 0, math.sin(f_theta), 0 ],
+            [  cos(f_theta), 0, sin(f_theta), 0 ],
             [                  0, 1,                 0, 0 ],
-            [ -math.sin(f_theta), 0, math.cos(f_theta), 0 ],
+            [ -sin(f_theta), 0, cos(f_theta), 0 ],
             [                  0, 0,                 0, 1 ]
         ])
 
     @staticmethod
-    def get_rot_z(f_theta):
+    def get_rot_z(double f_theta):
         """
         get rotation matrix around z
         :params f_theta <float>:
         :returns <Matrix4x4:
         """
         return Matrix4x4([
-            [ math.cos(f_theta), -math.sin(f_theta), 0, 0 ],
-            [ math.sin(f_theta),  math.cos(f_theta), 0, 0 ],
+            [ cos(f_theta), -sin(f_theta), 0, 0 ],
+            [ sin(f_theta),  cos(f_theta), 0, 0 ],
             [                 0,                  0, 1, 0 ],
             [                 0,                  0, 0, 1 ]
         ])
@@ -330,7 +356,7 @@ class Matrix4x4:
         ])
 
     @staticmethod
-    def get_projection(aspect, fov, q, z_near=0.1):
+    def get_projection(double aspect, double fov, double q, double z_near=0.1):
         """
         return projection matrix
         :params aspect <float>: aspect ratiion height/width

@@ -92,14 +92,11 @@ if __name__=='__main__':
             # do rotation, projection, translation, scaling
             for triangle in model:
 
-                # rotate around x an z with combined rotation matrix
-                t_x = triangle * rot_total
-
-                # project to 2D
-                t_p = t_x * projection_matrix
+                # rotate around x an z with combined rotation matrix, afterwards project
+                t_p = (triangle * rot_total) * projection_matrix
 
                 # calculate normal to triangle
-                t_normal = t_p.normal().normalize()
+                t_normal = t_p.normal()
                 # calculate dot product of camera and normalized vector
                 camera_v = (t_p.v1 - camera).normalize() # camera vector normalized
                 if camera_v.dot(t_normal) > 0.0:
