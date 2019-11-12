@@ -121,7 +121,7 @@ def main():
                         thing.update()
                 pygame.display.flip()
     except KeyboardInterrupt:
-        print 'shutting down'
+        print('shutting down')
 
 if __name__ == '__main__':
     main()
