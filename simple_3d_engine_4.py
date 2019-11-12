@@ -27,12 +27,12 @@ import pygame
 from Simple3dEngine import Vec4d, Matrix4x4, Mesh, Triangle
 
 def draw_triangle(surface, color, triangle):
-    points = [(p.x, p.y) for p in triangle]
-    pygame.draw.polygon(surface, color, points, 1)
+    # points = [(p.x, p.y) for p in triangle]
+    pygame.draw.polygon(surface, color, triangle.get_2d(), 1)
 
 def draw_filled_triangle(surface, color, triangle):
-    points = [(p.x, p.y) for p in triangle]
-    pygame.draw.polygon(surface, color, points, 0)
+    # points = [(p.x, p.y) for p in triangle]
+    pygame.draw.polygon(surface, color, triangle.get_2d(), 0)
 
 if __name__=='__main__':
 
@@ -66,8 +66,12 @@ if __name__=='__main__':
         # load from file, the self defined cube has some error
         model = Mesh.from_file("obj_models/teapot.obj")
         print(model)
-        model_position = Vec4d(0, 0, 5, 0)
         counter = 0
+        # to translate model in world space
+        trans = Matrix4x4.get_translate((0.0, 0.0, 5.0, 1.0)) # translate model into Z
+        # to shift and scale in view space
+        v_matrix = Matrix4x4.get_translate((1.0, 1.0, 0.0, 0.0)) # shift by x+1, y+1
+        v_matrix = v_matrix.mul_matrix(Matrix4x4.get_scale((width / 2, height / 2, 1.0, 1.0))) # scale x and y
         while True:
             clock.tick(FPS)
             events = pygame.event.get()
@@ -81,56 +85,45 @@ if __name__=='__main__':
                     sys.exit(1)
             surface.fill(0)
             # create rotation matrix around x and z axis
-            f_theta = time.time()
-            rot_x = Matrix4x4.get_rot_x(f_theta)
-            rot_z = Matrix4x4.get_rot_z(f_theta * 0.5)
-            rot_total = rot_x.mul_matrix(rot_z) # combined matrix
-            trans = Matrix4x4.get_translate(Vec4d(0, 0, 5, 1))
-            rot_total = rot_total.mul_matrix(trans) # adding translation
-
-            raster_triangles =[] # put triangles to draw in
+            theta = time.time()
+            rot_x = Matrix4x4.get_rot_x(theta) # rotate around X
+            rot_z = Matrix4x4.get_rot_z(theta * 0.5) # rotate around Z
+            p_matrix = rot_x.mul_matrix(rot_z) # combined matrix
+            p_matrix = p_matrix.mul_matrix(trans) # adding translation
+            p_matrix = p_matrix.mul_matrix(projection_matrix) # finally project
+            raster_triangles = [] # put triangles to draw in
             # do rotation, projection, translation, scaling
             for triangle in model:
 
                 # rotate around x an z with combined rotation matrix, afterwards project
-                t_p = (triangle * rot_total) * projection_matrix
+                # all modifications in world space
+                t_p = triangle.mul(p_matrix) # projected triangle
 
                 # calculate normal to triangle
                 t_normal = t_p.normal()
-                # calculate dot product of camera and normalized vector
-                camera_v = (t_p.v1 - camera).normalize() # camera vector normalized
+                # calculate dot product of camera and normal vector
+                camera_v = t_p.v1.sub(camera).normalize() # camera vector normalized
                 if camera_v.dot(t_normal) > 0.0:
-                #if t_normal.z > 0.0: # normals not pointing in our direction, skipping
                     # z negative means, outwards, to the watching face
                     continue
                 # calculate dot product of normal to light direction
                 # to get the correct shadings
-                light_v = (t_p.v1 - light).normalize() # light vector unit vector
-                lum = max(255 * light_v.dot(t_normal), 0)
-                color = (lum, lum, lum)
+                light_v = t_p.v1.sub(light).normalize() # light vector unit vector
+                lum = 255 * light_v.dot(t_normal) # always be positive
+                if lum < 0.0: # skip non light triangles
+                    # means this triangle is face away from light
+                    continue
 
-                # shift to positive values
-                t_p.v1.x += 1.0
-                t_p.v1.y += 1.0
-                t_p.v2.x += 1.0
-                t_p.v2.y += 1.0
-                t_p.v3.x += 1.0
-                t_p.v3.y += 1.0
+                # shift and scale in View World
+                t_p = t_p.mul(v_matrix)
+                # put on buffer
+                raster_triangles.append((t_p, lum))
 
-                # scale by half the screen
-                t_p.v1.x *= width / 2
-                t_p.v1.y *= height / 2
-                t_p.v2.x *= width / 2
-                t_p.v2.y *= height / 2
-                t_p.v3.x *= width / 2
-                t_p.v3.y *= height / 2
-
-                raster_triangles.append((t_p, color))
-
-            for t_p, color in sorted(raster_triangles):
+            for t_p, lum in sorted(raster_triangles):
                 # drawing triangles to show from back to front
-                draw_filled_triangle(surface, color, t_p)
+                draw_filled_triangle(surface, (lum, lum, lum), t_p)
                 #draw_triangle(surface, WHITE, t_p)
+
             # show FPS on screen
             fps = font.render(f"fps: {clock.get_fps()}", True, pygame.Color("red"))
             surface.blit(fps, (50, 50))
