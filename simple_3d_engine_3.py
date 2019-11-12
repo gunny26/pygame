@@ -321,16 +321,16 @@ class Matrix4x4:
     @staticmethod
     def get_translate(vec):
         """
-        get translation matrix from given Vec4d
+        get translation matrix from given Vec4d, w must be 1
         TODO: not sure if this correct
         :params f_theta <float>:
         :returns <Matrix4x4:
         """
         return Matrix4x4([
-            [ 1, 0, vec[0], 0 ],
-            [ 0, 1, vec[1], 0 ],
-            [ 0, 0, vec[2], 0 ],
-            [ 0, 0, 0, 1 ]
+            [ 1, 0, 0, 0 ],
+            [ 0, 1, 0, 0 ],
+            [ 0, 0, 1, 0 ],
+            [ vec[0], vec[1], vec[2], 1 ]
         ])
 
     @staticmethod
@@ -364,6 +364,7 @@ if __name__=='__main__':
     try:
         surface = pygame.display.set_mode((600,600))
         pygame.init()
+        font = pygame.font.Font(None, 20) # to display FPS an some infos
         # constants
         FPS = 60
         WHITE = (255, 255, 255) # white
@@ -389,7 +390,7 @@ if __name__=='__main__':
         light = Vec4d(0, 0, 3, 0)
         #light_direction = Vec4d(0, 0, -1, 0).normalize()
         # load from file, the self defined cube has some error
-        model = Mesh.from_file("obj_models/sphere.obj")
+        model = Mesh.from_file("obj_models/teapot.obj")
         print(model)
         model_position = Vec4d(0, 0, 5, 0)
         while True:
@@ -409,6 +410,8 @@ if __name__=='__main__':
             rot_x = Matrix4x4.get_rot_x(f_theta)
             rot_z = Matrix4x4.get_rot_z(f_theta * 0.5)
             rot_total = rot_x.mul_matrix(rot_z) # combined matrix
+            trans = Matrix4x4.get_translate(Vec4d(0, 0, 5, 1))
+            rot_total = rot_total.mul_matrix(trans) # adding translation
 
             raster_triangles =[] # put triangles to draw in
             # do rotation, projection, translation, scaling
@@ -417,11 +420,8 @@ if __name__=='__main__':
                 # rotate around x an z with combined rotation matrix
                 t_x = triangle * rot_total
 
-                # translate into Z
-                t_t = t_x.translate(model_position)
-
                 # project to 2D
-                t_p = t_t * projection_matrix
+                t_p = t_x * projection_matrix
 
                 # calculate normal to triangle
                 t_normal = t_p.normal().normalize()
@@ -459,6 +459,9 @@ if __name__=='__main__':
                 # drawing triangles to show from back to front
                 draw_filled_triangle(surface, color, t_p)
                 #draw_triangle(surface, WHITE, t_p)
+            # show FPS on screen
+            fps = font.render(f"fps: {clock.get_fps()}", True, pygame.Color("red"))
+            surface.blit(fps, (50, 50))
             pygame.display.flip()
     except KeyboardInterrupt:
         print("shutting down")
