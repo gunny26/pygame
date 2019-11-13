@@ -386,4 +386,41 @@ class Mesh:
                     triangles.append(Triangle(vertices[t_vertices[0]], vertices[t_vertices[1]], vertices[t_vertices[2]]))
             return Mesh(triangles)
 
+cpdef object render(object model, Vec4d camera, Vec4d light, Matrix4x4 p_matrix, Matrix4x4 v_matrix):
+    """
+    main rendering loop doing some stuff
+    """
+    raster_triangles = [] # put triangles to draw in
+    # do rotation, projection, translation, scaling
+    cdef Triangle t_p
+    cdef Vec4d t_normal
+    cdef Vec4d camera_v
+    cdef Vec4d light_v
+    cdef int lum
+    for triangle in model:
 
+        # rotate around x an z with combined rotation matrix, afterwards project
+        # all modifications in world space
+        t_p = triangle.mul(p_matrix) # projected triangle
+
+        # calculate normal to triangle
+        t_normal = t_p.normal()
+        # calculate dot product of camera and normal vector
+        camera_v = t_p.v1.sub(camera).normalize() # camera vector normalized
+        if camera_v.dot(t_normal) > 0.0:
+            # z negative means, outwards, to the watching face
+            continue
+        # calculate dot product of normal to light direction
+        # to get the correct shadings
+        light_v = t_p.v1.sub(light).normalize() # light vector unit vector
+        lum = int(255 * light_v.dot(t_normal))
+        if lum < 0: # skip non light triangles
+            # means this triangle is face away from light
+            continue
+
+        # shift and scale in View World
+        t_p = t_p.mul(v_matrix)
+
+        # put on buffer
+        raster_triangles.append((t_p, lum))
+    return raster_triangles
