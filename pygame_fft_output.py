@@ -55,21 +55,21 @@ while True:
     surface.fill((0, 0, 0))
     t1 = time.time()
     # pcm signal
-    pcm = inStream.read(BUFFER * 2)
+    pcm = inStream.read(BUFFER * 2) # returns int16 byted coded string
     signal = numpy.fromstring(pcm, dtype=numpy.int16)
-    out_stream.write(pcm)
+    #out_stream.write(pcm)
     duration = time.time() - t1
     # fft
-    fft = abs(scipy.fft(signal))
+    fft = abs(scipy.fft(signal)) # list
     # frequencies
     freqs = scipy.fftpack.fftfreq(signal.size, duration)
     # print freqs
     faktor = 500
     # print fft
     # t = scipy.linspace(0, time.time(), WIDTH)
-    points_fft = numpy.column_stack((xrange(len(fft)), zero_fft - fft / faktor))
-    # points_freqs = numpy.column_stack((xrange(len(freqs)), middle + freqs / faktor))
-    points_signal = numpy.column_stack((xrange(len(freqs)), zero_signal + signal / 100))
+    points_fft = numpy.column_stack((range(len(fft)), zero_fft - fft / faktor))
+    # points_freqs = numpy.column_stack((range(len(freqs)), middle + freqs / faktor))
+    points_signal = numpy.column_stack((range(len(freqs)), zero_signal + signal / 100))
     #for x in range(surface.get_width()):
     #    points.append((x, fft[x]))
     # print points
@@ -77,3 +77,4 @@ while True:
     pygame.draw.aalines(surface, (0, 255, 0), False, points_signal, 1)
     pygame.display.update()
     clock.tick(FPS)
+    #break
