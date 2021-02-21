@@ -18,7 +18,7 @@ class Mandelbrot(object):
         self.height = self.surface.get_height()
         self.array2d = pygame.surfarray.array2d(self.surface)
         starttime = time.time()
-        self.version3()
+        self.version1()
         print("done in %0.3f" % (time.time() - starttime))
 
     def version1(self, left=-2.1, right=0.7, bottom=-1.2, top=1.2, maxiter=30):
@@ -33,9 +33,9 @@ class Mandelbrot(object):
         stepy = (top - bottom) / self.height
         stepx = (right - left) / self.width
         cy = bottom
-        for hy in xrange(self.height):
+        for hy in range(self.height):
             cx = left
-            for hx in xrange(self.width):
+            for hx in range(self.width):
                 x = cx
                 y = cy
                 iteration = 0
@@ -157,7 +157,7 @@ class Mandelbrot(object):
 def main():
     try:
         fps = 25
-        surface = pygame.display.set_mode((10, 10))
+        surface = pygame.display.set_mode((320, 200))
         # pygame.init()
         mandelbrot = Mandelbrot(surface)
         clock = pygame.time.Clock()
