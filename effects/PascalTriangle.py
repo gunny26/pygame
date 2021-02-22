@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import sys
 import math
+import time
 # non std modules
 import pygame
 
@@ -8,19 +9,21 @@ import pygame
 class PascalTriangle(object):
     """Draw Pascal Triangle on surface, not moving"""
 
-    def __init__(self, surface, base, radius, numrows):
+    def __init__(self, dim, base, radius, numrows):
         """
         (pygame.Surface) surface - surface to draw on
         (int) base - color modulo value
         (float) radius - size of circles
         (int) numrows - how many rows should be calculated
         """
-        self.surface = surface
+        self.width, self.height = dim  # (width, height) tuple
+        self.surface = pygame.Surface((self.width, self.height))
         self.base = base
         self.radius = radius
         self.num_rows = numrows
+        self.initialize()
 
-    def update(self):
+    def initialize(self):
         """ draw something """
         dy = math.sqrt(2) * self.radius
         row_above_colors = None
@@ -49,15 +52,18 @@ class PascalTriangle(object):
                     color = pygame.Color(0, 247, 255)
                 else:
                     color = pygame.Color(255, 255, 255)
-                rect = pygame.Rect(200 + self.radius * (2 * col - row), dy * (row + 1), self.radius * 2, self.radius * 2)
+                rect = pygame.Rect(self.width // 2 + self.radius * (2 * col - row), dy * (row + 1), self.radius * 2, self.radius * 2)
                 pygame.draw.ellipse(self.surface, color, rect, 1)
                 current_row_colors.append(current_color)
             row_above_colors = current_row_colors
 
+    def update(self):
+        return self.surface
+
 
 def test():
     """ test """
-    fps = 1
+    fps = 50
     surface = pygame.display.set_mode((600, 400))
     pygame.init()
     clock = pygame.time.Clock()
@@ -68,9 +74,8 @@ def test():
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
-                sys.exit(0)
         pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
-        game_object.update()
+        surface.blit(game_object.update(), (0, 0))
         pygame.display.update()
 
 if __name__ == "__main__" :

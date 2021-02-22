@@ -9,11 +9,11 @@ import pygame
 class PerlinNoise(object):
     """Perlin Noise generated 2d surface"""
 
-    def __init__(self, surface):
+    def __init__(self, dim):
         """
         (pygame.Surface) surface - surface to draw on
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         # set some values
         self.width = self.surface.get_width()
         self.height = self.surface.get_height()
@@ -65,6 +65,7 @@ class PerlinNoise(object):
     def update(self):
         """blit pixelarray to surface"""
         pygame.surfarray.blit_array(self.surface, self.array2d)
+        return self.surface
 
 
 def test():

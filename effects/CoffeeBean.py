@@ -1,6 +1,7 @@
 #!/usr/bin/python3
-
 import sys
+import random
+# non std modules
 import pygame
 from pygame import gfxdraw
 import noise
@@ -78,7 +79,7 @@ class CoffeeDraw(object):
 def main():
     try:
         fps = 50
-        surface = pygame.display.set_mode((600, 400))
+        surface = pygame.display.set_mode((320, 200))
         pygame.init()
         effects = [
             CoffeeDraw(surface),

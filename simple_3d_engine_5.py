@@ -62,13 +62,13 @@ if __name__=='__main__':
         # define Camera position
         camera = Vec4d(0, 0, 0, 0)
         # define light position
-        light = Vec4d(0, 0, 3, 0)
+        light = Vec4d(0, 10, 20, 0)
         # load from file, the self defined cube has some error
-        model = Mesh.from_file("obj_models/teapot.obj")
+        model = Mesh.from_file("obj_models/Porous_Sphere_v1_L1.123c784474c1-099f-44c9-bcbf-16b96e385352/15737_Porous_Sphere_v1_NEW.obj")
         print(model)
         counter = 0
         # to translate model in world space
-        trans = Matrix4x4.get_translate((0.0, 0.0, 5.0, 1.0)) # translate model into Z
+        trans = Matrix4x4.get_translate((0.0, 0.0, 80.0, 1.0)) # translate model into Z
         # to shift and scale in view space
         v_matrix = Matrix4x4.get_translate((1.0, 1.0, 0.0, 0.0)) # shift by x+1, y+1
         v_matrix = v_matrix.mul_matrix(Matrix4x4.get_scale((width / 2, height / 2, 1.0, 1.0))) # scale x and y

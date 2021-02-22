@@ -9,11 +9,11 @@ import random
 class JuliaFractal(object):
     """Classical Julia Set Fractal, realy slow on python, so have some patience"""
 
-    def __init__(self, surface):
+    def __init__(self, dim):
         """
         (pygame.Surface) surface - surface to draw on
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         # set some values
         self.width = self.surface.get_width()
         self.height = self.surface.get_height()
@@ -49,6 +49,7 @@ class JuliaFractal(object):
     def update(self):
         """blit pixelarray to surface"""
         pygame.surfarray.blit_array(self.surface, self.array2d)
+        return self.surface
 
 
 def main():
