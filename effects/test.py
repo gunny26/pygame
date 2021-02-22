@@ -10,15 +10,25 @@ from SinusText import SinusText
 from ScrollText import ScrollText
 from Fire import Fire
 from CoffeeBean import CoffeeDraw
+# backgrounds
+from PerlinNoise import PerlinNoise
+from JuliaFractal import JuliaFractal
 
 def main():
     try:
         fps = 50
         frames = 0  # frame counter
-        surface = pygame.display.set_mode((320, 200))
+        width = 320
+        height = 200
+        surface = pygame.display.set_mode((width, height))
         pygame.init()
         clock = pygame.time.Clock()
         # cycle thru every efefcts set after 500 frames
+        background_surface = pygame.Surface((width, height), pygame.SRCALPHA)
+        backgrounds = [
+            # PerlinNoise(background_surface).update(),
+            JuliaFractal(background_surface).update()
+        ]
         effects = [
             Lissajou(surface, (160, 100), 100, 3, 1),
             RotatingLines(surface, (160, 100), 100, 7, 0.9),
@@ -31,15 +41,19 @@ def main():
             [
                 effects[0],
                 effects[1],
+                effects[5],
             ], [
                 effects[1],
                 effects[2],
+                effects[5],
             ], [
                 effects[2],
                 effects[3],
+                effects[5],
             ], [
                 effects[4],
                 effects[3],
+                effects[5],
             ], [
                 effects[5],
             ]
@@ -61,6 +75,7 @@ def main():
                     pause = not pause is True
             if not pause:
                 surface.fill((0, 0, 0, 255))
+                surface.blit(background_surface, (0, 0))
                 for effect in scenes[frames // 500 % len(scenes)]:
                     effect.update()
                 pygame.display.flip()

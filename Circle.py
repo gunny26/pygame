@@ -94,7 +94,7 @@ def test():
         spheres = (
             Circle(surface, (100, 0, 0), Vec3d(-1.5, -1.5, 1.5), Vec3d(1, 1, 1)),
             )
-        clock = pygame.time.Clock()       
+        clock = pygame.time.Clock()
         # for 3d projection
         fov = 1
         viewer_distance = 256
@@ -102,9 +102,9 @@ def test():
         color = pygame.Color(255, 255, 255, 255)
         while True:
             clock.tick(fps)
-            events = pygame.event.get()  
-            for event in events:  
-                if event.type == pygame.QUIT:  
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
                     sys.exit(0)
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
@@ -136,7 +136,7 @@ def test():
                     thing.update(viewer_distance=viewer_distance, fov=fov)
                 pygame.display.flip()
     except KeyboardInterrupt:
-        print 'shutting down'
+        pygame.quit()
 
 if __name__ == "__main__":
     test()

@@ -10,6 +10,7 @@ from SinusText import SinusText
 from ScrollText import ScrollText
 from Fire import Fire
 from CoffeeBean import CoffeeDraw
+from SpiralText import SpiralText
 # background effects
 from PerlinNoise import PerlinNoise
 from PlasmaFractal import PlasmaFractal
@@ -28,6 +29,11 @@ def main():
         surface = pygame.display.set_mode((width, height))  # main foreground surface
         b_surface = pygame.Surface((width, height))  # surface to place bacground on
         pygame.init()
+        # some music
+        pygame.mixer.init()
+        pygame.mixer.music.load("2019-01-10_-_Land_of_8_Bits_-_Stephen_Bennett_-_FesliyanStudios.com.mp3")
+        pygame.mixer.music.play(-1)  # endless background music
+        # synchronize with framerate
         clock = pygame.time.Clock()
         # pre initialize Backgrounds
         backgrounds = [
@@ -80,6 +86,7 @@ def main():
                 "backgrounds": [PlasmaFractal((width, height))],
                 "effects": [
                     effects[5],
+                    SpiralText(surface, "vertical scroling text, goind up and up and up and ...", pygame.Color(0, 255, 255), 30, 2),
                 ]
             }, {
                 "backgrounds": [GradientBackground((width, height), start_rgb, target_rgb)],
@@ -103,7 +110,7 @@ def main():
                     pygame.quit()
                     sys.exit(1)
                 if keyinput[pygame.K_SPACE]:
-                    pause = not pause is True
+                    pause = not pause is True  # invert pause
             if not pause:
                 surface.fill((0, 0, 0, 255))  # black out screen
                 for background in scenes[frames // 500 % len(scenes)]["backgrounds"]:

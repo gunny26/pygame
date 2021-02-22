@@ -4,7 +4,6 @@ import pygame
 import sys
 import os
 import math
-from scipy.weave import converters
 import time
 
 
@@ -23,7 +22,7 @@ class Plasma(object):
         self.upsize = surface.get_size()
         self.parent = surface
         self.surface = pygame.Surface(self.upsize)
-        self.surface = pygame.transform.scale(self.surface, (self.surface.get_width() / scale, self.surface.get_height() / scale))
+        self.surface = pygame.transform.scale(self.surface, (self.surface.get_width() // scale, self.surface.get_height() // scale))
         self.array2d = pygame.surfarray.array2d(self.surface)
         self.initialize()
 
@@ -75,7 +74,7 @@ class Plasma(object):
         color = pygame.Color(0, 0, 0, 255)
         color.hsla = (h, 100, 50, 50)
         self.array2d[xx][yy] = color
- 
+
     def calculate2(self, data):
         """improved version with own precalculated sin values"""
         t = self.tick
@@ -96,14 +95,13 @@ class Plasma(object):
         color = pygame.Color(0, 0, 0, 255)
         color.hsla = (h, 100, 50, 50)
         self.array2d[xx][yy] = color
- 
+
     def update(self):
         """update every frame"""
         map(self.calculate, self.data)
         pygame.surfarray.blit_array(self.surface, self.array2d)
-        pygame.transform.scale(self.surface, self.parent.get_size(), self.parent) 
+        pygame.transform.scale(self.surface, self.parent.get_size(), self.parent)
         self.tick += 5 * math.pi / 180
-                
 
 def test():
     try:
@@ -113,8 +111,8 @@ def test():
         things = (
             Plasma(surface, scale=2),
             )
-        clock = pygame.time.Clock()       
-        # mark pause state 
+        clock = pygame.time.Clock()
+        # mark pause state
         pause = False
         # fill background
         surface.fill((0, 0, 0, 255))
@@ -123,9 +121,9 @@ def test():
             # limit to FPS
             clock.tick(fps)
             # Event Handling
-            events = pygame.event.get()  
-            for event in events:  
-                if event.type == pygame.QUIT:  
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
                     running = False
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
@@ -138,9 +136,9 @@ def test():
                 for thing in things:
                     thing.update()
                 pygame.display.update()
-                # pygame.display.flip()
+                pygame.display.flip()
     except KeyboardInterrupt:
-        print 'shutting down'
+        pygame.quit()
 
 if __name__ == "__main__":
     import pstats

@@ -91,7 +91,7 @@ class Particles(object):
         self.initialize()
 
     def initialize(self):
-        for counter in xrange(self.count):
+        for counter in range(self.count):
             pos = Vec2d(random.randint(0, self.surface.get_width()), random.randint(0, self.surface.get_height()))
             color = pygame.Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
             size = 10 + random.randint(0, 20)
@@ -203,4 +203,4 @@ if __name__=='__main__':
                 pygame.display.update()
                 # pygame.display.flip()
     except KeyboardInterrupt:
-        print 'shutting down'
+        pygame.quit()
