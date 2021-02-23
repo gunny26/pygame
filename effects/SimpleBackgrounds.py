@@ -1,19 +1,17 @@
 #!/usr/bin/python3
-import sys
+""" Some Simple Backgrounds """
 import pygame
 
 
-def get_rgb_color_gradient(start_rgb:tuple, target_rgb:tuple, steps:int) -> list:
+def get_rgb_color_gradient(start_rgb: tuple, target_rgb: tuple, steps: int) -> list:
     """
     calculating color gradient in RGB space from start to end color
 
-    params:
-    start_rgb: <tuple> (r, b, b) of starting color
-    target_rgb: <tuple> (r, b, b) of target color
-    steps: <int> how many substeps
+    :param start_rgb: <tuple> (r, g, b, a) of starting color, alpha ignored
+    :param target_rgb: <tuple> (r, g, b, a) of target color, alpha ignored
+    :param steps: <int> how many substeps
 
-    returns:
-    <list> of <tuple> (r, g, b)
+    :returns <list>: of <tuple> (r, g, b, 255)
     """
     step_r = (target_rgb[0] - start_rgb[0]) / steps
     step_g = (target_rgb[1] - start_rgb[1]) / steps
@@ -24,7 +22,8 @@ def get_rgb_color_gradient(start_rgb:tuple, target_rgb:tuple, steps:int) -> list
             (
                 int(start_rgb[0] + i * step_r),
                 int(start_rgb[1] + i * step_g),
-                int(start_rgb[2] + i * step_b)
+                int(start_rgb[2] + i * step_b),
+                255
             )
         )
     return ret_data
@@ -32,24 +31,33 @@ def get_rgb_color_gradient(start_rgb:tuple, target_rgb:tuple, steps:int) -> list
 
 class GradientBackground():
 
-    def __init__(self, dim, start_rgb, target_rgb):
+    def __init__(self, dim: tuple, start_rgb: tuple, target_rgb: tuple):
         """
         Color Gradient background from start to target
+
+        :param dim: diemsion of surface to create
+        :param start_rgb: starting RGB color value
+        :param target_rgb: end RGB color value
         """
         self.surface = pygame.Surface(dim)
         gradient = get_rgb_color_gradient(start_rgb, target_rgb, dim[1])
         for y in range(dim[1]):
             pygame.draw.line(self.surface, gradient[y], (0, y), (dim[0], y))
 
-    def update(self):
+    def update(self) -> pygame.Surface:
+        """ return background surface """
         return self.surface
 
 
 class GradientBackground2():
 
-    def __init__(self, dim, start_rgb, target_rgb):
+    def __init__(self, dim: tuple, start_rgb: tuple, target_rgb: tuple):
         """
         Color Gradient background from start to target and back to start
+
+        :param dim: diemsion of surface to create
+        :param start_rgb: starting RGB color value
+        :param target_rgb: end RGB color value
         """
         self.surface = pygame.Surface(dim)
         gradient = get_rgb_color_gradient(start_rgb, target_rgb, dim[1] // 2)
@@ -57,13 +65,14 @@ class GradientBackground2():
         for y in range(dim[1]):
             pygame.draw.line(self.surface, gradient[y], (0, y), (dim[0], y))
 
-    def update(self):
+    def update(self) -> pygame.Surface:
+        """ return background surface """
         return self.surface
 
 
 def main():
     try:
-        fps = 1
+        fps = 50
         width = 600
         height = 400
         start_rgb = (0, 100, 200)
@@ -90,6 +99,6 @@ def main():
     except KeyboardInterrupt:
         pygame.quit()
 
+
 if __name__ == '__main__':
     main()
-

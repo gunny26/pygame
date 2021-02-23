@@ -1,15 +1,21 @@
 #!/usr/bin/python3
-
-import pygame
+""" Foreground effect """
 import sys
 import math
+# non std modules
+import pygame
+
 
 class Lissajou(object):
-    """Sinus wave scroll text"""
+    """ Lines moving on Lissajous paths around """
 
-    def __init__(self, surface, center=(160, 100), radius=100, factor=2, anglecount=1):
+    def __init__(self, surface: pygame.Surface, center: tuple = (160, 100), radius: int = 100, factor: int = 2, anglecount: int = 1):
         """
-        (pygame.Surface) surface to draw on
+        :param surface: surface to draw on
+        :param center: center the lines are moving around
+        :param radius: radius of waves
+        :param factor: factor between X- and Y-wave
+        :param anglecount: anglestep per update
         """
         self.surface = surface
         self.radius = radius
@@ -19,10 +25,7 @@ class Lissajou(object):
         self.angle = 0  # starting angle
 
     def update(self):
-        """
-        update every frame
-        (int)hpos y axis offset
-        """
+        """ update every frame """
         points = []
         for afterglow in range(1, 20):
             angle = self.angle - afterglow  # this amount of degrees back
@@ -37,7 +40,7 @@ class Lissajou(object):
 
 def main():
     try:
-        fps = 60
+        fps = 50
         surface = pygame.display.set_mode((320, 200))
         pygame.init()
         clock = pygame.time.Clock()
@@ -56,18 +59,19 @@ def main():
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
-                    sys.exit(0)
+                    pygame.quit()
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
-                    sys.exit(1)
+                    pygame.quit()
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for effect in effects:
                     effect.update()
                 pygame.display.flip()
     except KeyboardInterrupt:
-        print('shutting down')
+        pygame.quit()
+
 
 if __name__ == '__main__':
     main()

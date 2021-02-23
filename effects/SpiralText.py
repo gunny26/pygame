@@ -1,33 +1,34 @@
 #!/usr/bin/python3
-import random
 import math
 # non std modules
 import pygame
 
-class SpiralText(object):
-    """Text scrlling up in spiral, if text is long enougth"""
 
-    def __init__(self, surface, text, color, size=30, speed=1):
+class SpiralText(object):
+    """Text scrolling up in spiral, if text is long enough it look like 3D"""
+
+    def __init__(self, surface: pygame.Surface, text: str, color: tuple, size: int = 30, speed: int = 1):
         """
-        (pygame.Surface) surface to draw on
-        (string) text - text to draw
-        (int) hpos - horizontal position on y axis
-        (int) amplitude - amplitude of sinus wave
-        (int) frequency - frequency of sinus wave
-        (pygame.Color) color - color of font
-        (int) size - size of font
+
+        :param surface: <pygame.Surface> surface to draw on
+        :param text: <str> String to render
+        :param color: <tuple> in (r, g, b) color of text
+        :param size: <int> size of font
+        :param speed: <int> speed of rotation
         """
         self.surface = surface
         self.text = text
         self.color = color
         self.size = size
         self.speed = speed
+        # set font to render
         self.font = pygame.font.SysFont("mono", self.size, bold=True)
-        self.characters = []
-        self.center = surface.get_width() // 2
-        self.width = surface.get_width() // 4
-        self.angle = 0
-        for index, character in enumerate(self.text):
+        self.center = surface.get_width() // 2  # center of rotation
+        self.width = surface.get_width() // 4  # width in left and right of center
+        self.angle = 0  # starting angle
+        self.characters = []  # individual character information
+        # initial placing
+        for index, character in enumerate(text):
             self.characters.append({
                 "x": self.center + int(self.width * math.sin(math.radians(self.angle + 10 * index))),
                 "y": surface.get_height() + 2 * index * size,
@@ -35,22 +36,26 @@ class SpiralText(object):
             })
         self.angle += 1
 
-
     def update(self):
-        """
-        update every frame
-        (int)hpos y axis offset
-        """
+        """ update every frame """
+        # local variables to speed up
+        center = self.center
+        speed = self.speed
+        height = self.surface.get_height()
+        width = self.width
+        angle = self.angle
+        surface = self.surface
+        # do the work
         for index, character in enumerate(self.characters):
-            self.surface.blit(
+            surface.blit(
                 character["surface"],
                 (character["x"], character["y"]),
             )
-            character["x"] = self.center + int(self.width * math.sin(math.radians(self.angle + 10 * index)))
-            if character["y"] > 0 :
-                character["y"] -= self.speed
+            character["x"] = center + int(width * math.sin(math.radians(angle + 10 * index)))
+            if character["y"] > 0:
+                character["y"] -= speed
             else:
-                character["y"] = self.surface.get_height()
+                character["y"] = height
         self.angle += 1
 
 
