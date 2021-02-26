@@ -11,6 +11,7 @@ from ScrollText import ScrollText
 from Fire import Fire
 from CoffeeBean import CoffeeDraw
 from SpiralText import SpiralText
+from Starfield import Starfield
 # background effects
 from PerlinNoise import PerlinNoise
 from PlasmaFractal import PlasmaFractal
@@ -94,6 +95,9 @@ def main():
                     effects[5],
                     effects[3],
                 ]
+            }, {
+                "backgrounds": [GradientBackground((width, height), (0, 0, 0), (50, 50, 50))],
+                "effects": [Starfield(surface, stars=100, depth=10, speed=0.01)],
             }
         ]
         pause = False
