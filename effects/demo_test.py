@@ -12,12 +12,14 @@ from Fire import Fire
 from CoffeeBean import CoffeeDraw
 from SpiralText import SpiralText
 from Starfield import Starfield
+from Plasma import Plasma
 # background effects
 from PerlinNoise import PerlinNoise
 from PlasmaFractal import PlasmaFractal
 from PascalTriangle import PascalTriangle
 from JuliaFractal import JuliaFractal
 from SimpleBackgrounds import GradientBackground
+from Spectrographs import SpectrumBar, SpectrumCircle
 
 def main():
     try:
@@ -96,8 +98,14 @@ def main():
                     effects[3],
                 ]
             }, {
-                "backgrounds": [GradientBackground((width, height), (0, 0, 0), (50, 50, 50))],
+                "backgrounds": [GradientBackground((width, height), (0, 0, 0), (128, 50, 50))],
                 "effects": [Starfield(surface, stars=100, depth=10, speed=0.01)],
+            }, {
+                "backgrounds": [SpectrumCircle((width, height), 44100)],
+                "effects": [Starfield(surface, stars=100, depth=10, speed=0.01)],
+            }, {
+                "backgrounds": [SpectrumBar((width, height), 44100)],
+                "effects": [Plasma(surface)],
             }
         ]
         pause = False
@@ -124,6 +132,7 @@ def main():
                     effect.update()
                 pygame.display.flip()
             frames += 1
+            pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
     except KeyboardInterrupt:
         pygame.quit()
 

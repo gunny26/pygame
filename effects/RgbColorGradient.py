@@ -20,13 +20,18 @@ def get_rgb_color_gradient(start_rgb:tuple, target_rgb:tuple, steps:int) -> list
     step_r = (target_rgb[0] - start_rgb[0]) / steps
     step_g = (target_rgb[1] - start_rgb[1]) / steps
     step_b = (target_rgb[2] - start_rgb[2]) / steps
+    if len(start_rgb) == 4:
+        alpha = start_rgb[3]
+    else:
+        alpha = 255
     ret_data = []
     for i in range(steps):
         ret_data.append(
             (
                 int(start_rgb[0] + i * step_r),
                 int(start_rgb[1] + i * step_g),
-                int(start_rgb[2] + i * step_b)
+                int(start_rgb[2] + i * step_b),
+                alpha
             )
         )
     return ret_data

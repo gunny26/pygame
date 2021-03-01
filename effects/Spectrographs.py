@@ -1,25 +1,37 @@
-from math import sqrt
+#!/usr/bin/python3
 import time
+import math
 # non std modules
 import pygame
 import pyaudio
 import numpy as np
+# own modules
+from RgbColorGradient import get_rgb_color_gradient
 
 
-class Spectrum:
+class SpectrumBar:
     """ audio spectrograph effect for background """
 
-    def __init__(self, dim, rate=44100):
+    def __init__(self, dim: tuple, rate: int = 44100):
+        """
+        bar spectrograph
+
+        :param dim: dimension in (x, y)
+        :param rate: sampling rate
+        """
         self.surface = pygame.Surface(dim)
         self.height = dim[1]
         self.chunk = dim[0]  # width of spectogram
         self.format = pyaudio.paInt16
         audio = pyaudio.PyAudio()
-        self.stream = audio.open(format=pyaudio.paInt16,
+        self.stream = audio.open(
+            format=pyaudio.paInt16,
             channels=1,
             rate=rate,
             input=True,
-            frames_per_buffer=self.chunk)
+            frames_per_buffer=self.chunk
+        )
+        self.colors = get_rgb_color_gradient((255, 0, 0), (0, 0, 255), 256)
 
     def update(self):
         """ update every frame """
@@ -28,20 +40,26 @@ class Spectrum:
         fft_complex = np.fft.fft(data, n=self.chunk)  # fft analysis
         # find total maximum to calculate scale
         lengths = [value.real * value.real + value.imag * value.imag for value in fft_complex[:len(fft_complex) // 2]]  # all vector lengths
-        max_val = sqrt(max(lengths))
+        max_val = math.sqrt(max(lengths))
         if max_val != 0.0:
             self.surface.fill((0, 0, 0))  # blank out
             scale_value = self.height / max_val
-            for index, length in enumerate(lengths):  # skip the upper half
-                dist = int(scale_value * sqrt(length))
-                pygame.draw.line(self.surface, (100, 100, 100), (index, self.height), (index, self.height - dist))
+            for index, length in enumerate(lengths[1:]):  # skip the upper half and the first one
+                dist = int(scale_value * math.sqrt(length))
+                pygame.draw.line(self.surface, self.colors[index], (index, self.height), (index, self.height - dist))
         return self.surface
 
 
 class SpectrumCircle:
     """ audio spectrograph effect for background """
 
-    def __init__(self, dim, rate=44100):
+    def __init__(self, dim: tuple, rate: int = 44100):
+        """
+        polar spectrograph
+
+        :param dim: dimension in (x, y)
+        :param rate: sampling rate
+        """
         self.surface = pygame.Surface(dim)
         self.center = (dim[0] // 2, dim[1] // 2)
         self.radius = dim[1] // 2
@@ -49,63 +67,29 @@ class SpectrumCircle:
         self.chunk = 360  # 360 degrees
         self.format = pyaudio.paInt16
         audio = pyaudio.PyAudio()
-        self.stream = audio.open(format=pyaudio.paInt16,
+        self.stream = audio.open(
+            format=pyaudio.paInt16,
             channels=1,
             rate=rate,
             input=True,
-            frames_per_buffer=self.chunk)
+            frames_per_buffer=self.chunk
+        )
+        self.colors = get_rgb_color_gradient((255, 0, 0), (0, 0, 255), 256)
 
-    def update(self):
+    def update(self) -> pygame.Surface:
         """ update every frame """
         buff = self.stream.read(self.chunk)  # read chunk paInt16
         data = np.frombuffer(buff, dtype=np.int16)  # to numpy array
         fft_complex = np.fft.fft(data, n=self.chunk)  # fft analysis
-        # find total maximum to calculate scale
-        lengths = [value.real * value.real + value.imag * value.imag for value in fft_complex[:len(fft_complex) // 2]]  # all vector lengths
-        max_val = sqrt(max(lengths))
+        max_val = 2 * 2 ** 16  # maximum value of datatype
         if max_val != 0.0:
             self.surface.fill((0, 0, 0))  # blank out
-            for index, value in enumerate(fft_complex[:len(fft_complex) // 2]):  # skip the upper half
+            for index, value in enumerate(fft_complex[1:len(fft_complex) // 2:4]):  # skip the upper half and the first one
                 x = self.center[0] + int(self.radius * value.real / max_val)
                 y = self.center[1] + int(self.radius * value.imag / max_val)
-                pygame.draw.line(self.surface, (100, 100, 100), self.center, (x, y))
+                pygame.draw.line(self.surface, self.colors[index], self.center, (x, y))
         return self.surface
 
-
-def old():
-    pygame.init()
-
-    SCREEN_HEIGHT = 50
-    RATE = 44100
-    CHUNK = RATE // 128
-    FORMAT = pyaudio.paInt16
-
-    audio = pyaudio.PyAudio()
-    stream = audio.open(format=FORMAT,
-        channels=1,
-        rate=RATE,
-        input=True,
-        frames_per_buffer=CHUNK)
-    screen = pygame.display.set_mode((CHUNK // 2, SCREEN_HEIGHT))
-    color = (0, 128, 1)  # color to draw the lines
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-        buff = stream.read(CHUNK)  # read chunk paInt16
-        data = np.frombuffer(buff, dtype=np.int16)  # to numpy array
-        fft_complex = np.fft.fft(data, n=CHUNK)  # fft analysis
-        # find total maximum to calculate scale
-        lengths = [value.real * value.real + value.imag * value.imag for value in fft_complex[:len(fft_complex) // 2]]  # all vector lengths
-        max_val = sqrt(max(lengths))
-        if max_val != 0.0:
-            screen.fill((0, 0, 0))  # blank out
-            scale_value = SCREEN_HEIGHT / max_val
-            for index, length in enumerate(lengths):  # skip the upper half
-                #v = complex(v.real / dist1, v.imag / dist1)
-                dist = scale_value * sqrt(length)
-                pygame.draw.line(screen, color, (index, SCREEN_HEIGHT), (index, SCREEN_HEIGHT - dist))
-            pygame.display.flip()
 
 def main():
     try:
