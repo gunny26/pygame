@@ -4,11 +4,6 @@ import math
 import random
 # non std modules
 import pygame
-from pygame import gfxdraw
-import numpy
-# own modules
-from Vec2d import Vec2d
-# from Vector import Vector
 
 FPS = 50
 
@@ -83,8 +78,8 @@ class Particle(object):
         self.size = size
         self.color = color
         # garivty is 9.81 m/s
-        self.gravity = Vector(0, -9.81 / FPS)  # force to the ground aka bottom side
-        self.drag = Vector(1.0, 1.0)  # decrease in speed per FPS
+        self.gravity = Vector(0, 9.81 / FPS)  # force to the ground aka bottom side
+        self.drag = Vector(1.0, 0.999)  # decrease in speed per FPS
 
     def _bounce(self):
         """ bounce from surface borders """
@@ -139,7 +134,7 @@ class Particles(object):
             pos = Vector(random.randint(0, self.surface.get_width()), random.randint(0, self.surface.get_height()))
             direction = Vector(10 * (random.random() - 0.5), 10 * (random.random() - 0.5))
             color = pygame.Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
-            size = 10 + random.randint(0, 20)
+            size = 5 + random.randint(0, 10)
             particle = Particle(self.surface, pos, direction, size, color)
             self.particles.append(particle)
 
@@ -188,13 +183,13 @@ class Particles(object):
             #p2.pos.y += math.cos(angle) + overlap
 
 
-if __name__=='__main__':
+def main():
 
     try:
-        surface = pygame.display.set_mode((600,600))
+        surface = pygame.display.set_mode((320, 200))
         pygame.init()
         things = (
-            Particles(surface, 100),
+            Particles(surface, 20),
             )
         clock = pygame.time.Clock()
         # mark pause state
@@ -210,11 +205,6 @@ if __name__=='__main__':
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    (mouseX, mouseY) = pygame.mouse.get_pos()
-                    clicked = Vec2d(mouseX, mouseY)
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    clicked = None
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 # print keyinput
@@ -232,3 +222,7 @@ if __name__=='__main__':
                 # pygame.display.flip()
     except KeyboardInterrupt:
         pygame.quit()
+
+if __name__=='__main__':
+    main()
+

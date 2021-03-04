@@ -13,6 +13,7 @@ from CoffeeBean import CoffeeDraw
 from SpiralText import SpiralText
 from Starfield import Starfield
 from Plasma import Plasma
+from Particle import Particles
 # background effects
 from PerlinNoise import PerlinNoise
 from PlasmaFractal import PlasmaFractal
@@ -106,6 +107,9 @@ def main():
             }, {
                 "backgrounds": [SpectrumBar((width, height), 44100)],
                 "effects": [Plasma(surface)],
+            }, {
+                "backgrounds" : [GradientBackground((width, height), start_rgb, target_rgb)],
+                "effects": [Particles(surface, 10)]
             }
         ]
         pause = False
