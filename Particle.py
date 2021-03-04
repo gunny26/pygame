@@ -33,7 +33,7 @@ class Particle(object):
         self.color = pygame.Color(200 - density * 10, 200 - density * 10, 255)
         # initialize things
 
-    def bounce(self):
+    def _bounce(self):
         width = self.surface.get_width()
         height = self.surface.get_height()
         # right border
@@ -61,7 +61,7 @@ class Particle(object):
             #self.direction.angle = math.pi - self.direction.angle
             self.direction *= self.elasticity
 
-    def move(self):
+    def _move(self):
         self.pos = self.direction.addpos(self.pos)
         # add gravity
         self.direction += self.gravity
@@ -69,6 +69,7 @@ class Particle(object):
         self.direction *= self.drag
 
     def update(self, **kwds):
+        """ update every frame """
         self.move()
         self.bounce()
         dirtyrect = pygame.draw.circle(self.surface, self.color, Vec2d(int(self.pos.x), int(self.pos.y)), self.size, 1)
