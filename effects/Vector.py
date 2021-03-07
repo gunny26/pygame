@@ -1,95 +1,61 @@
-#!/usr/bin/python3
-"""Vector Module, something with length and angle"""
+#!/usr/bin/python
 import math
-from Vec2d import Vec2d
 
 
-class Vector(object):
-    """Vector Class represents length and angle"""
+class Vector:
+    """ 2D Vector Class """
 
-    def __init__(self, length, angle):
-        self.length = length
-        self.angle = angle
+    def __init__(self, x: float, y: float):
+        """
+        2 Column vector in form
+
+        | x |
+        | y |
+        """
+        self.x = x
+        self.y = y
 
     def __add__(self, other):
-        if isinstance(other, Vector):
-            # other is Vector object
-            x  = math.sin(self.angle) * self.length + math.sin(other.angle) * other.length
-            y  = math.cos(self.angle) * self.length + math.cos(other.angle) * other.length
-            length = math.hypot(x, y)
-            angle = 0.5 * math.pi - math.atan2(y, x)
-            return(Vector(length, angle))
-        elif hasattr(other, "__getitem__"):
-            # other is type sequence
-            x  = math.sin(self.angle) * self.length + math.sin(other[1]) * other[0]
-            y  = math.cos(self.angle) * self.length + math.cos(other[1]) * other[0]
-            length = math.hypot(x, y)
-            angle = 0.5 * math.pi - math.atan2(y, x)
-            return(Vector(length, angle))
-        else:
-            # TODO does this make sense, only lenght
-            return(Vector(self.length + other, self.angle))
-    __radd__ = __add__
+        return Vector(self.x + other.x, self.y + other.y)
 
     def __iadd__(self, other):
-        if isinstance(other, Vector):
-            # other is Vector object
-            x  = math.sin(self.angle) * self.length + math.sin(other.angle) * other.length
-            y  = math.cos(self.angle) * self.length + math.cos(other.angle) * other.length
-            self.length = math.hypot(x, y)
-            self.angle = 0.5 * math.pi - math.atan2(y, x)
-            return(self)
-        elif hasattr(other, "__getitem__"):
-            # other is type sequence
-            x  = math.sin(self.angle) * self.length + math.sin(other[1]) * other[0]
-            y  = math.cos(self.angle) * self.length + math.cos(other[1]) * other[0]
-            self.length = math.hypot(x, y)
-            self.angle = 0.5 * math.pi - math.atan2(y, x)
-            return(self)
-        else:
-            # TODO does this make sense, only lenght
-            self.length += other
-            return(self)
-    __iradd__ = __iadd__
+        self.x += other.x
+        self.y += other.y
+        return self
+
+    def __sub__(self, other):
+        return Vector(self.x - other.x, self.y - other.y)
+
+    def __isub__(self, other):
+        self.x -= other.x
+        self.y -= other.y
+        return self
 
     def __mul__(self, other):
-        return(Vector(self.length * other, self.angle))
+        return Vector(self.x * other.x, self.y * other.y)
 
     def __imul__(self, other):
-        self.length *= other
-        return(self)
+        self.x *= other.x
+        self.y *= other.y
+        return self
 
-    def bounce(self, tangent=0):
-        """reverse direction"""
-        self.angle = tangent - self.angle
+    def __div__(self, other):
+        return Vector(self.x / other.x, self.y / other.y)
 
-    def addpos(self, position):
-        """add position to current vector and returns new position"""
-        x = position.x + math.sin(self.angle) * self.length
-        y = position.y - math.cos(self.angle) * self.length
-        return(Vec2d(x, y))
+    def __idiv__(self, other):
+        self.x /= other.x
+        self.y /= other.y
+        return self
 
-    @staticmethod
-    def vector_between(pos1, pos2):
-        """return vector between two points"""
-        dx = (pos1.x - pos2.x)
-        dy = (pos1.y - pos2.y)
-        dist = math.hypot(dx, dy)
-        theta = math.atan2(dy, dx)
-        return(Vector(dist, theta))
+    def distance(self, other):
+        """ return distance between self and other """
+        return Vector(other.x - self.x, other.y - self.x)
 
-    @staticmethod
-    def distance_between(pos1, pos2):
-        """return vector between two points"""
-        dx = (pos1.x - pos2.x)
-        dy = (pos1.y - pos2.y)
-        dist = math.hypot(dx, dy)
-        return(dist)
+    def length(self) -> float:
+        """ return lenght of vector """
+        return math.sqrt(self.x * self.x + self.y * self.y)
 
-    @staticmethod
-    def angle_between(pos1, pos2):
-        """return vector between two points"""
-        dx = (pos1.x - pos2.x)
-        dy = (pos1.y - pos2.y)
-        theta = math.atan2(dy, dx)
-        return(theta)
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+

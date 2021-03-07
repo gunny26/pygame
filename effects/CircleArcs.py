@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import math
+import random
 # non std modules
 import pygame
 # own modules
@@ -7,12 +8,12 @@ from Vector import Vector
 from RgbColorGradient import get_rgb_color_gradient
 
 FPS = 50
-PALETTE = get_rgb_color_gradient((50, 140, 70), (240, 0, 70), 256)
 
-class Superformula(object):
+
+class Arc(object):
     """ Draw Superformula Object, most basic form static drawing """
 
-    def __init__(self, surface: pygame.Surface, pos: Vector, size: int, color: tuple, params: list):
+    def __init__(self, surface: pygame.Surface, pos: Vector, color: tuple, params: list):
         """
         a particle in 2D space
 
@@ -20,55 +21,50 @@ class Superformula(object):
         :param pos: position to set particle, center of particle
         :param size: size of particle
         :param color: color of particle
-        :param parms: tuple oof four (m, n1, n2, n3)
+        :param width of circle arc
         """
         self.surface = surface
         self.pos = pos  # initial position
-        self.size = size
         self.color = color
         self.params = params
-        # split up parameters
-        self.m, self.n1, self.n2, self.n3 = params
-        self.a = 1.0  # fixed to one
-        self.b = 1.0
+        # inner radius
+        # outher radius will be radius + width
+        # start_angle stop_angle -> where the arc will be drawn
+        # direction - if positiv counter clockwise, otherwise clockwise
+        self.radius, self.start_angle, self.stop_angle, self.width, self.speed = params
         self.framecount = 0
         self._draw()
 
-    def _radius(self, theta: float) -> float:
-        """
-        calculate radius - unscaled
-
-        :param theta: value in radians
-        """
-        return pow(pow(abs(math.cos(self.m * theta / 4.0) / self.a), self.n2) + pow(abs(math.sin(self.m * theta / 4) / self.b), self.n3), -1 / self.n1)
-
     def _draw(self):
         """
-        draw suoperformula based on current parameters
+        draw thick arc from start_angle to stop_angle
         """
-        points = []
-        step = math.pi / 180.0  # step by 1 degree
-        # get local
-        framecount = self.framecount
-        size = self.size
-        pos_x = self.pos.x
-        pos_y = self.pos.y
-        for degree in range(0, 720):
-            radius = self._radius(step * (degree + framecount))
-            x = pos_x + math.cos(step * (degree + framecount)) * radius * size
-            y = pos_y + math.sin(step * (degree + framecount)) * radius * size
-            points.append((int(x), int(y)))
-        pygame.draw.lines(self.surface, PALETTE[self.framecount % 256], False, points, 3)
+        step = math.pi / 180
+        direction = 1
+        if self.stop_angle < self.start_angle:
+            direction = -1
+        inner = []
+        outer = []
+        for degree in range(int(self.start_angle), int(self.stop_angle), direction):
+            x = self.pos.x + self.radius * math.cos(degree * step)
+            y = self.pos.y + self.radius * math.sin(degree * step)
+            outer.append((x, y))
+            x = self.pos.x + (self.radius - self.width) * math.cos(degree * step)
+            y = self.pos.y + (self.radius - self.width) * math.sin(degree * step)
+            inner.append((x, y))
+        self.start_angle += (direction * self.speed)
+        self.stop_angle += (direction * self.speed)
+        pygame.draw.polygon(self.surface, self.color, outer + inner[::-1], 1)
 
     def update(self, params=None):
         """ update every frame """
         if params and self.params != params:  # if something changed
-            self.m, self.n1, self.n2, self.n3 = params
+            self.radius, self.start_angle, self.stop_angle, self.width, self.speed = params
         self._draw()
         self.framecount += 1
 
 
-class SuperformulaAnimation(object):
+class ArcAnimation(object):
     """ Draw Superformula Object and vary some parameters on every frame """
 
     def __init__(self, surface: pygame.Surface, pos: Vector, size: int, color: tuple):
@@ -86,26 +82,21 @@ class SuperformulaAnimation(object):
         self.size = size
         self.color = color
         # initial set of values
-        self.m, self.n1, self.n2, self.n3 = (3.0, 4.5, 10.0, 10.0)
-        self.a = self.b = 1.0  # fixed to one
+        self.arcs = []
+        count = 10
+        palette = get_rgb_color_gradient((50, 140, 70), (240, 0, 70), count)
+        for i in range(count):
+            start_angle = random.randint(-360, 360)
+            stop_angle = random.randint(-360, 360)
+            width = 10
+            speed = 1.5 - random.random()
+            self.arcs.append(Arc(surface, pos, palette[i], (size - i * 20, start_angle, stop_angle, width, speed)))
         self.framecount = 0
-        self.params = None
-        self._calculate()
-        self.sf = Superformula(surface, Vector(320, 240), 100, (255, 255, 255), list(self.params.values()))
-
-    def _calculate(self):
-        """ calculate new parameter dependin on framerate """
-        self.params = {
-            "m": (1.1 + math.sin(math.radians(self.framecount))) * 5,
-            "n1": (1.1 + math.sin(math.radians(self.framecount * 2))) * 1.1,
-            "n2": (1.1 + math.sin(math.radians(self.framecount * 4))) * 1.2,
-            "n3": (1.5 + math.sin(math.radians(self.framecount * 8))) * 1.3
-        }
 
     def update(self):
         """ update every frame """
-        self._calculate()
-        self.sf.update(list(self.params.values()))
+        for arc in self.arcs:
+            arc.update()
         self.framecount += 1
 
 
@@ -115,7 +106,7 @@ def main():
         surface = pygame.display.set_mode((640, 480))
         pygame.init()
         things = (
-            SuperformulaAnimation(surface, Vector(320, 240), 100, (255, 255, 255)),
+            ArcAnimation(surface, Vector(320, 240), 200, (0x74, 0x54, 0x6a)),
             )
         clock = pygame.time.Clock()
         # mark pause state

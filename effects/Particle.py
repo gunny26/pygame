@@ -4,57 +4,10 @@ import math
 import random
 # non std modules
 import pygame
+# own modules
+from Vector import Vector
 
 FPS = 50
-
-class Vector:
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __add__(self, other):
-        return Vector(self.x + other.x, self.y + other.y)
-
-    def __iadd__(self, other):
-        self.x += other.x
-        self.y += other.y
-        return self
-
-    def __sub__(self, other):
-        return Vector(self.x - other.x, self.y - other.y)
-
-    def __isub__(self, other):
-        self.x -= other.x
-        self.y -= other.y
-        return self
-
-    def __mul__(self, other):
-        return Vector(self.x * other.x, self.y * other.y)
-
-    def __imul__(self, other):
-        self.x *= other.x
-        self.y *= other.y
-        return self
-
-    def __div__(self, other):
-        return Vector(self.x / other.x, self.y / other.y)
-
-    def __idiv__(self, other):
-        self.x /= other.x
-        self.y /= other.y
-        return self
-
-    def distance(self, other):
-        """ return distance between self and other """
-        return Vector(other.x - self.x, other.y - self.x)
-
-    def length(self):
-        """ return lenght of vector """
-        return math.sqrt(self.x * self.x + self.y * self.y)
-
-    def __str__(self):
-        return f"({self.x}, {self.y})"
 
 
 class Particle(object):
@@ -126,9 +79,9 @@ class Particles(object):
         self.count = count
         # initialize
         self.particles = []
-        self.elasticity = 0.1  # bounciness
-        self.drag = 0.2  # speed of movement
-        self.gravity = Vector(2.0, math.pi)  # gravity to the ground
+        self.elasticity = 0  # bounciness
+        self.drag = 1.1  # speed of movement
+        self.gravity = Vector(9.81, math.pi)  # gravity to the ground
         # initialize
         for counter in range(self.count):
             pos = Vector(random.randint(0, self.surface.get_width()), random.randint(0, self.surface.get_height()))
@@ -186,7 +139,7 @@ class Particles(object):
 def main():
 
     try:
-        surface = pygame.display.set_mode((320, 200))
+        surface = pygame.display.set_mode((640, 480))
         pygame.init()
         things = (
             Particles(surface, 20),

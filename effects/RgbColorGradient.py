@@ -37,6 +37,33 @@ def get_rgb_color_gradient(start_rgb:tuple, target_rgb:tuple, steps:int) -> list
     return ret_data
 
 
+def get_cmyk_color_gradient(start_cmy:tuple, target_cmy:tuple, steps:int) -> list:
+    """
+    calculating color gradient in RGB space from start to end color
+
+    params:
+    start_cmyk: <tuple> (c, m, y, k) of starting color
+    target_cmyk: <tuple> (c, m, y, k) of target color
+    steps: <int> how many substeps
+
+    returns:
+    <list> of <tuple> (r, g, b)
+    """
+    step_c = (target_cmyk[0] - start_cmyk[0]) / steps
+    step_m = (target_cmyk[1] - start_cmyk[1]) / steps
+    step_y = (target_cmyk[2] - start_cmyk[2]) / steps
+    ret_data = []
+    for i in range(steps):
+        ret_data.append(
+            (
+                int(start_cmyk[0] + i * step_c),
+                int(start_cmyk[1] + i * step_m),
+                int(start_cmyk[2] + i * step_y),
+            )
+        )
+    return ret_data
+
+
 def test():
     try:
         fps = 50

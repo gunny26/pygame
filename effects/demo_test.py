@@ -21,6 +21,10 @@ from PascalTriangle import PascalTriangle
 from JuliaFractal import JuliaFractal
 from SimpleBackgrounds import GradientBackground
 from Spectrographs import SpectrumBar, SpectrumCircle
+from Superformula import SuperformulaAnimation
+from CircleArcs import ArcAnimation
+# some utilities
+from Vector import Vector
 
 def main():
     try:
@@ -110,6 +114,12 @@ def main():
             }, {
                 "backgrounds" : [GradientBackground((width, height), start_rgb, target_rgb)],
                 "effects": [Particles(surface, 10)]
+            }, {
+                "backgrounds" :[GradientBackground((width, height), start_rgb, target_rgb)],
+                "effects": [SuperformulaAnimation(surface, Vector(160, 120), 100, (255, 255, 255))]
+            }, {
+                "backgrounds" : [GradientBackground((width, height), start_rgb, target_rgb)],
+                "effects": [ArcAnimation(surface, Vector(160, 120), 100, (0x74, 0x54, 0x6a))]
             }
         ]
         pause = False
