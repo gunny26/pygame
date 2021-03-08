@@ -6,6 +6,8 @@ from pygame import gfxdraw
 # own modules
 from RgbColorGradient import get_rgb_color_gradient
 
+FPS = 60
+DIM = (320, 200)  # initial window size
 SIN = [math.sin(math.radians(degree)) for degree in range(0, 360, 1)]
 PALETTE = get_rgb_color_gradient((50, 140, 70, 255), (240, 0, 70, 255), 256)
 
@@ -87,16 +89,16 @@ class CircleInterference:
 
 def main():
     try:
-        fps = 50
-        pygame.display.init()
-        surface = pygame.display.set_mode((320, 200))
+        pygame.display.init()  # only initialize display, no other modules
+        surface = pygame.display.set_mode(DIM)
         effects = [
-            CircleInterference((320, 200))
+            CircleInterference(DIM)
+            # ColorInterference(DIM)
         ]
         clock = pygame.time.Clock()
         pause = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
@@ -105,13 +107,20 @@ def main():
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                if keyinput[pygame.K_f]:  # go to FULLSCREEN
+                    pygame.display.quit()
+                    pygame.display.init()
+                    surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
             if pause is not True:
                 surface.fill((0, 0, 0))
                 for background in effects:
-                    surface.blit(background.update(), (0, 0))
+                    b_surface = background.update()
+                    pygame.transform.scale(b_surface, (surface.get_width(), surface.get_height()), surface)  # blit and scale to display
                 pygame.display.flip()
             pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
     except KeyboardInterrupt:
+        pygame.quit()
+    finally:
         pygame.quit()
 
 
