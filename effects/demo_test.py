@@ -3,7 +3,7 @@ import sys
 import math
 # non std modules
 import pygame
-# owm modules
+# own modules
 from Lissajous import Lissajou
 from RotatingLines import RotatingLines
 from SinusText import SinusText
@@ -23,8 +23,15 @@ from SimpleBackgrounds import GradientBackground
 from Spectrographs import SpectrumBar, SpectrumCircle
 from Superformula import SuperformulaAnimation
 from CircleArcs import ArcAnimation
+from Interference import ColorInterference, CircleInterference
 # some utilities
 from Vector import Vector
+from RgbColorGradient import get_rgb_color_gradient
+
+
+SIN = [math.sin(math.radians(degree)) for degree in range(0, 360, 1)]
+PALETTE = get_rgb_color_gradient((50, 140, 70, 255), (240, 0, 70, 255), 256)
+
 
 def main():
     try:
@@ -115,11 +122,17 @@ def main():
                 "backgrounds" : [GradientBackground((width, height), start_rgb, target_rgb)],
                 "effects": [Particles(surface, 10)]
             }, {
-                "backgrounds" :[GradientBackground((width, height), start_rgb, target_rgb)],
-                "effects": [SuperformulaAnimation(surface, Vector(160, 120), 100, (255, 255, 255))]
+                "backgrounds" :[ColorInterference((width, height), PALETTE, SIN)],
+                "effects": [
+                    SuperformulaAnimation(surface, Vector(160, 120), 100, (255, 255, 255)),
+                    ScrollText(surface, "superformula in action", 180, PALETTE[-1])
+                ]
             }, {
-                "backgrounds" : [GradientBackground((width, height), start_rgb, target_rgb)],
-                "effects": [ArcAnimation(surface, Vector(160, 120), 100, (0x74, 0x54, 0x6a))]
+                "backgrounds" : [CircleInterference((width, height), PALETTE, SIN)],
+                "effects": [
+                    ArcAnimation(surface, Vector(160, 120), 100, (0x74, 0x54, 0x6a)),
+                    ScrollText(surface, "moving circle arcs", 180, PALETTE[0])
+                ]
             }
         ]
         pause = False

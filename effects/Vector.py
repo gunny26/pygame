@@ -7,10 +7,10 @@ class Vector:
 
     def __init__(self, x: float, y: float):
         """
-        2 Column vector in form
+        2 Column vector in this form
 
-        | x |
-        | y |
+        | x | type <float>
+        | y | type <float>
         """
         self.x = x
         self.y = y
@@ -55,7 +55,48 @@ class Vector:
         """ return lenght of vector """
         return math.sqrt(self.x * self.x + self.y * self.y)
 
+    def dot(self, other) -> float:
+        return self.x * other.x + self.y * other.y
+
+    def normalize(self):
+        """ normalize Vector to length == 1 """
+        length = self.length()
+        return Vector(self.x / length, self.y / length)
+
+    def inormalize(self):
+        """ normalize Vector inplace to length == 1 """
+        length = self.length()
+        self.x /= length
+        self.y /= length
+        return self
+
+    def theta(self):
+        """
+        return angle theta in radians
+
+        tan theta = y/x fpr x != 0
+        theta = arctan (y/x) for x != 0
+        """
+        return math.atan2(self.y, self.x)
+
     def __str__(self):
         return f"({self.x}, {self.y})"
 
+
+if __name__ == "__main__":
+    v1 = Vector(1, 0)
+    v2 = Vector(0, 1)  # perpendicular angle
+    print(f"dot product of v2 on v1: {v2.dot(v1)}")
+    print(f"dot product of v1 on v2: {v2.dot(v1)}")
+    v1 = Vector(1, 0)
+    v2 = Vector(0.5, 0.707106781)  # 45 degree angle
+    print(f"dot product of v2 on v1: {v2.dot(v1)}")
+    print(f"dot product of v1 on v2: {v2.dot(v1)}")
+    v1 = Vector(0.5, 0.707106781)  # 45 degree angle
+    v2 = Vector(0.5, 0.707106781)  # 45 degree angle
+    print(f"dot product of v2 on v1: {v2.dot(v1)}")
+    print(f"dot product of v1 on v2: {v2.dot(v1)}")
+    print(f"length of v1, v2       : {v1.length()}")
+    print(f"theta of v1            : {v1.theta()} radians")
+    print(f"theta of v2            : {v2.theta()} radians")
 
