@@ -1,38 +1,40 @@
 #!/usr/bin/python
-import math
+# flake8: E501
 # non std modules
 import pygame
-from pygame import gfxdraw
-# own modules
-from RgbColorGradient import get_rgb_color_gradient
 
 FPS = 60
 DIM = (320, 200)  # initial window size
-SIN = [math.sin(math.radians(degree)) for degree in range(0, 360, 1)]
-PALETTE = get_rgb_color_gradient((50, 140, 70, 255), (240, 0, 70, 255), 256)
 
 
 class ImageFader:
     """ interfering colors """
 
-    def __init__(self, dim, palette=PALETTE, sin=SIN):
+    def __init__(self, dim):
         """
         (pygame.Surface) surface - surface to draw on
         """
         self.dim = dim
-        self.palette = palette
-        self.sin = sin
         self.surface = pygame.image.load(open("images/172133.png", "rb")).convert()
-        self.p_array = pygame.PixelArray(self.surface)
-        self.p_array.transpose()
-        self.p_array.close()
+        print(self.surface.get_width(), self.surface.get_height())
+        slices = 10  # number of vertical slices
+        self.height = self.surface.get_height() // slices
+        self.width = self.surface.get_width()
+        self.s_surfaces = []
+        for i in range(slices):
+            # left top width height
+            area_to_blit = (0, i * self.height, self.width, self.height)
+            s_surface = self.surface.subsurface(area_to_blit).copy()
+            self.s_surfaces.append(s_surface)
         self.framecount = 0
 
     def update(self):
         """ blit on background surface """
-        # surface = pygame.Surface(self.dim)
-        # surface.blit(self.p_array, (0, 0))
-        #surface.blit(self.pixel_surface, (x - 100, y - 100), special_flags=pygame.BLEND_MAX)
+        direction = 1  # left or right
+        for index, s_surface in enumerate(self.s_surfaces):
+            self.surface.blit(s_surface, (0 + direction * self.framecount, index * self.height))
+            direction *= -1  # toggle direction
+        self.framecount += 1
         return self.surface
 
 
