@@ -41,12 +41,13 @@ def main():
         height = 200  # height of display
         start_rgb = (255, 0, 0)
         target_rgb = (0, 255, 255)
+        pygame.display.init()
         surface = pygame.display.set_mode((width, height))  # main foreground surface
         b_surface = pygame.Surface((width, height))  # surface to place bacground on
         pygame.init()
         # some music
         pygame.mixer.init()
-        pygame.mixer.music.load("2019-01-10_-_Land_of_8_Bits_-_Stephen_Bennett_-_FesliyanStudios.com.mp3")
+        pygame.mixer.music.load("music/2019-01-10_-_Land_of_8_Bits_-_Stephen_Bennett_-_FesliyanStudios.com.mp3")
         pygame.mixer.music.play(-1)  # endless background music
         # synchronize with framerate
         clock = pygame.time.Clock()

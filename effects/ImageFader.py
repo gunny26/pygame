@@ -7,17 +7,15 @@ FPS = 60
 DIM = (320, 200)  # initial window size
 
 
-class ImageFader:
+class ImageFaderHorizontal:
     """ interfering colors """
 
-    def __init__(self, dim):
+    def __init__(self, dim, filename, slices=10):
         """
         (pygame.Surface) surface - surface to draw on
         """
         self.dim = dim
-        self.surface = pygame.image.load(open("images/172133.png", "rb")).convert()
-        print(self.surface.get_width(), self.surface.get_height())
-        slices = 10  # number of vertical slices
+        self.surface = pygame.image.load(open(filename, "rb")).convert()
         self.height = self.surface.get_height() // slices
         self.width = self.surface.get_width()
         self.s_surfaces = []
@@ -38,12 +36,43 @@ class ImageFader:
         return self.surface
 
 
+class ImageFaderVertical:
+    """ interfering colors """
+
+    def __init__(self, dim, filename, slices=20):
+        """
+        (pygame.Surface) surface - surface to draw on
+        """
+        self.dim = dim
+        self.surface = pygame.image.load(open(filename, "rb")).convert()
+        print(self.surface.get_width(), self.surface.get_height())
+        self.height = self.surface.get_height()
+        self.width = self.surface.get_width() // slices
+        self.s_surfaces = []
+        for i in range(slices):
+            # left top width height
+            area_to_blit = (i * self.width, 0, self.width, self.height)
+            s_surface = self.surface.subsurface(area_to_blit).copy()
+            self.s_surfaces.append(s_surface)
+        self.framecount = 0
+
+    def update(self):
+        """ blit on background surface """
+        direction = 1  # left or right
+        for index, s_surface in enumerate(self.s_surfaces):
+            self.surface.blit(s_surface, (index * self.width, 0 + direction * self.framecount))
+            direction *= -1  # toggle direction
+        self.framecount += 1
+        return self.surface
+
+
 def main():
     try:
         pygame.display.init()  # only initialize display, no other modules
         surface = pygame.display.set_mode(DIM)
         effects = [
-            ImageFader(DIM)
+            ImageFaderHorizontal(DIM, "images/157042.png"),
+            ImageFaderVertical(DIM, "images/157042.png")
         ]
         clock = pygame.time.Clock()
         pause = False
