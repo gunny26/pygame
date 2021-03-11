@@ -2,8 +2,6 @@
 import math
 # non std modules
 import pygame
-# own modules
-from Vector import Vector
 
 
 FPS = 50
@@ -54,12 +52,13 @@ class MorphingPixels:
         target = self.objects[1]  # object to morph to
         max_distance = 0  # holding maximum distance of any point
         for index in range(len(self.points)):
-            source_v = Vector(*self.points[index])
-            target_v = Vector(*target[index])
+            source_v = pygame.Vector2(*self.points[index])
+            target_v = pygame.Vector2(*target[index])
             direction = target_v - source_v  # vector from source to target
             max_distance = max(max_distance, direction.length())  # maximum distance of any point
-            point = source_v + direction.normalize()  # move by length=1
-            self.points[index] = list(point)
+            if direction.length():  # otherwise this point is finished
+                point = source_v + direction.normalize()  # move by length=1
+                self.points[index] = list(point)
         if max_distance <= 1.0:  # move back if target is reached
             self.objects.reverse()
             self.points = list(self.objects[0])

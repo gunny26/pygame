@@ -1,27 +1,36 @@
 #!/usr/bin/python3
-
-import sys
-import pygame
 import math
-from Vec2d import Vec2d as Vec2d
+# non std modules
+import pygame
+
+
+FPS = 1
+DIM = (600, 600)
+
 
 class HilbertCurve(object):
-    """Basic Hilbert Curve Algorithm"""
+    """ Basic Hilbert Curve Algorithm """
 
-    def __init__(self, surface, iteration=8, length=6):
-        self.surface = surface
+    def __init__(self, dim:tuple, iteration: int = 8, length: int = 6):
+        """
+        good to use for background, not realy an animation
+
+        :param dim: dimension of surface to draw on
+        :param iteration: how many iterations to calculate
+        :param length: length of individual segment
+        """
+        self.surface = pygame.Surface(dim)
         # Which iteration of the Hilbert curve to draw
         self.iteration = iteration
         # Length of each line in the Hilbert curve
         self.length = length
-        # self.pos = Vec2d(self.surface.get_width() - 10, 10)
-        self.pos = Vec2d(self.surface.get_width(), 0)
+        self.pos = pygame.Vector2(self.surface.get_width(), 0)
         self.color = pygame.Color(238, 255, 0)
         self.angle = 0
 
     def forward(self, distance):
-        myangle = math.radians(self.angle)
-        dest = self.pos + Vec2d(int(math.cos(myangle)), int(math.sin(myangle))) * (-distance)
+        myangle = math.radians(self.angle)  # convert to radians
+        dest = self.pos + pygame.Vector2(int(math.cos(myangle)), int(math.sin(myangle))) * (-distance)
         pygame.draw.line(self.surface, self.color, self.pos, dest)
         self.pos = dest
 
@@ -63,38 +72,37 @@ class HilbertCurve(object):
 
     def update(self):
         self.leftHilbert(self.iteration, self.length)
+        return self.surface
 
 
 def main():
     try:
-        fps = 1
-        surface = pygame.display.set_mode((600, 600))
+        pygame.display.init()
+        surface = pygame.display.set_mode(DIM)
         pygame.init()
         effects = [
-            HilbertCurve(surface)
+            HilbertCurve(DIM)
             ]
         clock = pygame.time.Clock()
         pause = False
         while True:
-            clock.tick(fps)
-            pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
-                    sys.exit(0)
+                    pygame.quit()
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
-                    sys.exit(0)
             if pause is not True:
-                #surface.fill((0, 0, 0, 255))
+                surface.fill((0, 0, 0, 255))
                 for effect in effects:
-                    effect.update()
+                    surface.blit(effect.update(), (0, 0))
                 pygame.display.flip()
+            pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
     except KeyboardInterrupt:
         pygame.quit()
-        sys.exit(0)
 
 
 if __name__ == "__main__" :

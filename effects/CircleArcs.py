@@ -4,8 +4,8 @@ import random
 # non std modules
 import pygame
 # own modules
-from Vector import Vector
 from RgbColorGradient import get_rgb_color_gradient
+
 
 FPS = 50
 
@@ -13,7 +13,7 @@ FPS = 50
 class Arc(object):
     """ Draw Superformula Object, most basic form static drawing """
 
-    def __init__(self, surface: pygame.Surface, pos: Vector, color: tuple, params: list):
+    def __init__(self, surface: pygame.Surface, pos: pygame.Vector2, color: tuple, params: list):
         """
         a particle in 2D space
 
@@ -67,7 +67,7 @@ class Arc(object):
 class ArcAnimation(object):
     """ Draw Superformula Object and vary some parameters on every frame """
 
-    def __init__(self, surface: pygame.Surface, pos: Vector, size: int, color: tuple):
+    def __init__(self, surface: pygame.Surface, pos: pygame.Vector2, size: int, color: tuple):
         """
         animated superformula figure in 2D, altering some parameters every frame
 
@@ -106,7 +106,7 @@ def main():
         surface = pygame.display.set_mode((640, 480))
         pygame.init()
         things = (
-            ArcAnimation(surface, Vector(320, 240), 200, (0x74, 0x54, 0x6a)),
+            ArcAnimation(surface, pygame.Vector2(320, 240), 200, (0x74, 0x54, 0x6a)),
             )
         clock = pygame.time.Clock()
         # mark pause state

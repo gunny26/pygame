@@ -25,7 +25,7 @@ from Superformula import SuperformulaAnimation
 from CircleArcs import ArcAnimation
 from Interference import ColorInterference, CircleInterference
 # some utilities
-from Vector import Vector
+# from Vector import Vector
 from RgbColorGradient import get_rgb_color_gradient
 
 
@@ -131,13 +131,13 @@ def main():
             }, {
                 "backgrounds" :[ColorInterference((width, height), PALETTE, SIN)],
                 "effects": [
-                    SuperformulaAnimation(surface, Vector(160, 120), 100, (255, 255, 255)),
+                    SuperformulaAnimation(surface, pygame.Vector2(160, 120), 100, (255, 255, 255)),
                     ScrollText(surface, "superformula in action", 180, PALETTE[-1])
                 ]
             }, {
                 "backgrounds" : [CircleInterference((width, height), PALETTE, SIN)],
                 "effects": [
-                    ArcAnimation(surface, Vector(160, 120), 100, (0x74, 0x54, 0x6a)),
+                    ArcAnimation(surface, pygame.Vector2(160, 120), 100, (0x74, 0x54, 0x6a)),
                     ScrollText(surface, "moving circle arcs", 180, PALETTE[0])
                 ]
             }

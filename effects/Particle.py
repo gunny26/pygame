@@ -13,7 +13,7 @@ FPS = 50
 class Particle(object):
     """ Paticle in 2D space """
 
-    def __init__(self, surface:pygame.Surface, pos:Vector, direction:Vector, size:int, color:tuple):
+    def __init__(self, surface:pygame.Surface, pos:pygame.Vector2, direction:pygame.Vector2, size:int, color:tuple):
         """
         a particle in 2D space
 
@@ -23,7 +23,7 @@ class Particle(object):
         :param color: color of particle
         :param direction: initial direction of particle in m/s aka pixel/frame
         :param gravity: gravity vector 9.81 m/s aka 9.81 pixel/frame
-        :param drag: decrease in direction per frame 
+        :param drag: decrease in direction per frame
         """
         self.surface = surface
         self.pos = pos  # initial position
@@ -31,8 +31,8 @@ class Particle(object):
         self.size = size
         self.color = color
         # garivty is 9.81 m/s
-        self.gravity = Vector(0, 9.81 / FPS)  # force to the ground aka bottom side
-        self.drag = Vector(1.0, 0.999)  # decrease in speed per FPS
+        self.gravity = pygame.Vector2(0, 9.81 / FPS)  # force to the ground aka bottom side
+        self.drag = pygame.Vector2(1.0, 0.999)  # decrease in speed per FPS
 
     def _bounce(self):
         """ bounce from surface borders """
@@ -42,22 +42,22 @@ class Particle(object):
         bottom = self.surface.get_height() - self.size
         if self.pos.x > right:  # right border
             self.pos.x = right
-            self.direction *= Vector(-1.0, 1.0)
+            self.direction = self.direction.elementwise() * pygame.Vector2(-1.0, 1.0)
         elif self.pos.x < left:  # left border
             self.pos.x = left
-            self.direction *= Vector(-1.0, 1.0)
+            self.direction = self.direction.elementwise() * pygame.Vector2(-1.0, 1.0)
         if self.pos.y > bottom:  # bottom border
             self.pos.y = bottom
-            self.direction *= Vector(1.0, -1.0)
+            self.direction = self.direction.elementwise() * pygame.Vector2(1.0, -1.0)
         elif self.pos.y < top:  # top border
             self.pos.y = top
-            self.direction *= Vector(1.0, -1.0)
+            self.direction = self.direction.elementwise() * pygame.Vector2(1.0, -1.0)
 
     def _move(self):
         """ move particle in space """
         self.pos += self.direction  # add direction vector
         self.direction += self.gravity  # add gravity to direction
-        self.direction *= self.drag  # apply drag to direction
+        self.direction = self.direction.elementwise() * self.drag  # apply drag to direction
 
     def update(self, **kwds):
         """ update every frame """
@@ -81,11 +81,11 @@ class Particles(object):
         self.particles = []
         self.elasticity = 0  # bounciness
         self.drag = 1.1  # speed of movement
-        self.gravity = Vector(9.81, math.pi)  # gravity to the ground
+        self.gravity = pygame.Vector2(9.81, math.pi)  # gravity to the ground
         # initialize
         for counter in range(self.count):
-            pos = Vector(random.randint(0, self.surface.get_width()), random.randint(0, self.surface.get_height()))
-            direction = Vector(10 * (random.random() - 0.5), 10 * (random.random() - 0.5))
+            pos = pygame.Vector2(random.randint(0, self.surface.get_width()), random.randint(0, self.surface.get_height()))
+            direction = pygame.Vector2(10 * (random.random() - 0.5), 10 * (random.random() - 0.5))
             color = pygame.Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
             size = 5 + random.randint(0, 10)
             particle = Particle(self.surface, pos, direction, size, color)
@@ -97,43 +97,17 @@ class Particles(object):
         """
         for particle in self.particles:
             particle.update()
-        #for index, particle in enumerate(self.particles):
-        #    for other_particle in self.particles[index+1:]:
-        #        particle, other_particle)
-        #return(dirtyrects)
 
     def collide(self, p1, p2):
         """
         Collission detection and handling method
 
-        :param p1: Vec2d of Particle 1
-        :param p2: Vec2d of Particle 2
+        :param p1: Vector2 of Particle 1
+        :param p2: Vector2 of Particle 2
         """
         distance = p1.pos.distance(p2.pos)  # distance between to particles
         if distance.length() < (p1.size + p2.size):
             pass
-            # total_mass = p1.mass + p2.mass
-
-            #p1.direction = Vector(p1.direction.length * (p1.mass - p2.mass) / total_mass, p1.direction.angle) \
-            #    + Vector(2 * p2.direction.length * p2.mass / total_mass, angle)
-            #p2.direction = Vector(p2.direction.length * (p2.mass - p1.mass) / total_mass, p2.direction.angle) \
-            #    + Vector(2 * p1.direction.length * p1.mass / total_mass, angle)
-            #p1.direction.length *= self.elasticity
-            #p2.direction.length *= self.elasticity
-#
-            #tangent = Vector.angle_between(p1.pos, p2.pos)
-            # bounce on tangent
-            #p1.direction.bounce(2 * tangent)
-            #p2.direction.bounce(2 * tangent)
-            # change speed
-            #(p1.direction.length, p2.direction.length) = (p2.direction.length, p1.direction.length)
-            #avoid sticky problem
-            #angle = 0.5 * math.pi + tangent
-            #overlap = 0.5 * (p1.size + p2.size - distance + 1)
-            #p1.pos.x += math.sin(angle) + overlap
-            #p1.pos.y -= math.cos(angle) + overlap
-            #p2.pos.x -= math.sin(angle) + overlap
-            #p2.pos.y += math.cos(angle) + overlap
 
 
 def main():

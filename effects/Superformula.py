@@ -3,16 +3,17 @@ import math
 # non std modules
 import pygame
 # own modules
-from Vector import Vector
 from RgbColorGradient import get_rgb_color_gradient
+
 
 FPS = 50
 PALETTE = get_rgb_color_gradient((50, 140, 70), (240, 0, 70), 256)
 
+
 class Superformula(object):
     """ Draw Superformula Object, most basic form static drawing """
 
-    def __init__(self, surface: pygame.Surface, pos: Vector, size: int, color: tuple, params: list):
+    def __init__(self, surface: pygame.Surface, pos: pygame.Vector2, size: int, color: tuple, params: list):
         """
         a particle in 2D space
 
@@ -71,7 +72,7 @@ class Superformula(object):
 class SuperformulaAnimation(object):
     """ Draw Superformula Object and vary some parameters on every frame """
 
-    def __init__(self, surface: pygame.Surface, pos: Vector, size: int, color: tuple):
+    def __init__(self, surface: pygame.Surface, pos: pygame.Vector2, size: int, color: tuple):
         """
         animated superformula figure in 2D, altering some parameters every frame
 
@@ -91,7 +92,7 @@ class SuperformulaAnimation(object):
         self.framecount = 0
         self.params = None
         self._calculate()
-        self.sf = Superformula(surface, Vector(320, 240), 100, (255, 255, 255), list(self.params.values()))
+        self.sf = Superformula(surface, pygame.Vector2(320, 240), 100, (255, 255, 255), list(self.params.values()))
 
     def _calculate(self):
         """ calculate new parameter dependin on framerate """
@@ -115,7 +116,7 @@ def main():
         surface = pygame.display.set_mode((640, 480))
         pygame.init()
         things = (
-            SuperformulaAnimation(surface, Vector(320, 240), 100, (255, 255, 255)),
+            SuperformulaAnimation(surface, pygame.Vector2(320, 240), 100, (255, 255, 255)),
             )
         clock = pygame.time.Clock()
         # mark pause state
