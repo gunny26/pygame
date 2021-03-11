@@ -118,10 +118,16 @@ def main():
                 "effects": [Starfield(surface, stars=100, depth=10, speed=0.01)],
             }, {
                 "backgrounds": [SpectrumBar((width, height), 44100)],
-                "effects": [Plasma(surface)],
+                "effects": [
+                    Plasma(surface),
+                    ScrollText(surface, "so, yeah thats not great, have to work on it", 150, pygame.Color(255, 255, 0))
+                ]
             }, {
                 "backgrounds" : [GradientBackground((width, height), start_rgb, target_rgb)],
-                "effects": [Particles(surface, 10)]
+                "effects": [
+                    Particles(surface, 10),
+                    ScrollText(surface, "some bouncing particles, basic physics", 150, pygame.Color(255, 255, 0))
+                ]
             }, {
                 "backgrounds" :[ColorInterference((width, height), PALETTE, SIN)],
                 "effects": [
