@@ -4,7 +4,7 @@ import math
 import pygame
 
 
-FPS = 1
+FPS = 60
 DIM = (600, 600)
 
 
@@ -13,7 +13,8 @@ class HilbertCurve(object):
 
     def __init__(self, dim:tuple, iteration: int = 8, length: int = 6):
         """
-        good to use for background, not realy an animation
+        good to use for background, not really an animation
+        best used with quadratic dimension
 
         :param dim: dimension of surface to draw on
         :param iteration: how many iterations to calculate
@@ -27,6 +28,7 @@ class HilbertCurve(object):
         self.pos = pygame.Vector2(self.surface.get_width(), 0)
         self.color = pygame.Color(238, 255, 0)
         self.angle = 0
+        self.leftHilbert(self.iteration, self.length)
 
     def forward(self, distance):
         myangle = math.radians(self.angle)  # convert to radians
@@ -71,7 +73,6 @@ class HilbertCurve(object):
         self.left(90)
 
     def update(self):
-        self.leftHilbert(self.iteration, self.length)
         return self.surface
 
 
@@ -82,7 +83,7 @@ def main():
         pygame.init()
         effects = [
             HilbertCurve(DIM)
-            ]
+        ]
         clock = pygame.time.Clock()
         pause = False
         while True:
@@ -103,7 +104,6 @@ def main():
             pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
     except KeyboardInterrupt:
         pygame.quit()
-
 
 if __name__ == "__main__" :
     main()

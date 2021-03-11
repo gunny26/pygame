@@ -22,11 +22,11 @@ class CoffeeDraw(object):
             """
             self.surface = surface
             self.beans = beans
+            self.__dict__.update(parameter_dict)
             self.x = None
             self.y = None
             self.x_off = None
             self.y_off = None
-            self.__dict__.update(parameter_dict)
             self.vel = 3 # or option vel
             self.accel = -0.003 # or option accel
             self.width = self.surface.get_width()

@@ -8,6 +8,7 @@ from RgbColorGradient import get_rgb_color_gradient
 
 
 FPS = 50
+DIM = (640, 480)
 
 
 class Arc(object):
@@ -17,7 +18,7 @@ class Arc(object):
         """
         a particle in 2D space
 
-        :param surface: surface to draw on
+        :param dim: dimensio of surface to draw on
         :param pos: position to set particle, center of particle
         :param size: size of particle
         :param color: color of particle
@@ -62,22 +63,23 @@ class Arc(object):
             self.radius, self.start_angle, self.stop_angle, self.width, self.speed = params
         self._draw()
         self.framecount += 1
+        return self.surface
 
 
 class ArcAnimation(object):
     """ Draw Superformula Object and vary some parameters on every frame """
 
-    def __init__(self, surface: pygame.Surface, pos: pygame.Vector2, size: int, color: tuple):
+    def __init__(self, dim: tuple, pos: pygame.Vector2, size: int, color: tuple):
         """
         animated superformula figure in 2D, altering some parameters every frame
 
-        :param surface: surface to draw on
+        :param dim: dimension of surface to draw on
         :param pos: position to set particle, center of particle
         :param size: size of particle
         :param color: color of particle
         :param parms: tuple oof four (m, n1, n2, n3)
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         self.pos = pos  # initial position
         self.size = size
         self.color = color
@@ -90,23 +92,25 @@ class ArcAnimation(object):
             stop_angle = random.randint(-360, 360)
             width = 10
             speed = 1.5 - random.random()
-            self.arcs.append(Arc(surface, pos, palette[i], (size - i * 20, start_angle, stop_angle, width, speed)))
+            self.arcs.append(Arc(self.surface, pos, palette[i], (size - i * 20, start_angle, stop_angle, width, speed)))
         self.framecount = 0
 
     def update(self):
         """ update every frame """
+        self.surface.fill(0)
         for arc in self.arcs:
             arc.update()
         self.framecount += 1
+        return self.surface
 
 
 def main():
 
     try:
-        surface = pygame.display.set_mode((640, 480))
-        pygame.init()
+        pygame.display.init()
+        surface = pygame.display.set_mode(DIM)
         things = (
-            ArcAnimation(surface, pygame.Vector2(320, 240), 200, (0x74, 0x54, 0x6a)),
+            ArcAnimation(DIM, pygame.Vector2(320, 240), 200, (0x74, 0x54, 0x6a)),
             )
         clock = pygame.time.Clock()
         # mark pause state
@@ -132,8 +136,9 @@ def main():
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for thing in things:
-                    thing.update()
+                    surface.blit(thing.update(), (0, 0))
                 pygame.display.flip()
+            pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
     except KeyboardInterrupt:
         pygame.quit()
 
