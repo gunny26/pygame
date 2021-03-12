@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # flake8: E501
+import random
 # non std modules
 import pygame
 
-FPS = 60
+FPS = 50
 DIM = (320, 200)  # initial window size
 
 
@@ -66,13 +67,51 @@ class ImageFaderVertical:
         return self.surface
 
 
+class ImageFaderDisappear:
+    """ randomly black out image pixel by pixel """
+
+    def __init__(self, dim, filename, pixels=1000):
+        """
+        :param dim: dimesion of surface to draw on
+        :param filename: filanme of image to load
+        :param pixel: how many pixel per frame to delete
+        """
+        self.dim = dim
+        self.surface = pygame.image.load(open(filename, "rb")).convert()
+        self.pixels = pixels
+        self.frames_to_finish = self.surface.get_width() * self.surface.get_height() // pixels
+        print(f"Fade will be finished in {self.frames_to_finish}")
+        self.framecount = 0
+
+    def update(self):
+        """ blit on background surface """
+        if self.framecount < self.frames_to_finish:
+            height = self.surface.get_height()
+            width = self.surface.get_width()
+            with pygame.PixelArray(self.surface) as p_array:
+                for pixel in range(self.pixels):
+                    x = random.randint(0, width - 1)
+                    y = random.randint(0, height - 1)
+                    while p_array[x, y] == 0:
+                        x += 1
+                        y += 1
+                        x %= width
+                        y %= height
+                    p_array[x, y] = 0
+        else:
+            print("Fade is finished")
+        self.framecount += 1
+        return self.surface
+
+
 def main():
     try:
         pygame.display.init()  # only initialize display, no other modules
         surface = pygame.display.set_mode(DIM)
         effects = [
             ImageFaderHorizontal(DIM, "images/157042.png"),
-            ImageFaderVertical(DIM, "images/157042.png")
+            ImageFaderVertical(DIM, "images/157042.png"),
+            ImageFaderDisappear(DIM, "images/157042.png")
         ]
         clock = pygame.time.Clock()
         pause = False
