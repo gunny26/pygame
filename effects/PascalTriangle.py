@@ -17,7 +17,7 @@ class PascalTriangle(object):
         (int) numrows - how many rows should be calculated
         """
         self.width, self.height = dim  # (width, height) tuple
-        self.surface = pygame.Surface((self.width, self.height))
+        self.surface = pygame.Surface(dim)
         self.base = base
         self.radius = radius
         self.num_rows = numrows

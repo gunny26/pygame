@@ -6,6 +6,9 @@ import pygame
 import numpy
 
 
+FPS = 50
+DIM = (320, 200)
+
 class Fire(object):
     """
     Simulated Fire, 2d effect
@@ -13,7 +16,7 @@ class Fire(object):
     http://lodev.org/cgtutor/fire.html
     """
 
-    def __init__(self, surface, rect, scale=4):
+    def __init__(self, dim, rect, scale=4):
         """
         (pygame.surface) surface - to draw on
         (pygame.Rect) dest - rect to blit fire on
@@ -21,10 +24,10 @@ class Fire(object):
         (int) height - height of fire
         (int) scale - scale fire
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         self.rect = rect
-        self.width = rect.width // scale
-        self.height = rect.height // scale
+        self.width = dim[0] // scale
+        self.height = dim[1] // scale
         self.scale = scale
         # initialize values
         # scaled down surface
@@ -82,38 +85,42 @@ class Fire(object):
         # scale fire surface up to given size
         blitsurface = pygame.transform.scale(self.drawsurface, (self.width * self.scale, self.height * self.scale))
         self.surface.blit(blitsurface, self.rect)
+        return self.surface
 
 
-def test():
+def main():
     try:
-        fps = 25
-        surface = pygame.display.set_mode((320, 200))
+        surface = pygame.display.set_mode(DIM)
         pygame.init()
-        spheres = (
-            Fire(surface, pygame.Rect(0, 0, 320, 200), 4),
+        effects = (
+            Fire(DIM, pygame.Rect(0, 0, 320, 200), 8),
             )
         clock = pygame.time.Clock()
         pause = False
         surface.fill((0, 0, 0))
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
-                    sys.exit(0)
+                    pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
-                    sys.exit(1)
+                    pygame.quit()
+                    return
             if pause is not True:
-                for thing in spheres:
-                    thing.update()
+                for effect in effects:
+                    surface.blit(effect.update(),(0, 0))
                 pygame.display.flip()
     except KeyboardInterrupt:
         pygame.quit()
 
 
 if __name__ == '__main__':
+    main()
+    sys.exit(0)
     import sys
     import os
     import cProfile
