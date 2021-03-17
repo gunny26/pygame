@@ -6,28 +6,38 @@ import math
 # non std modules
 import pygame
 
+
+FPS = 50
+DIM = (320, 200)
+
 class PerlinNoise(object):
-    """Perlin Noise generated 2d surface"""
+    """ Perlin Noise generated 2d surface """
 
     def __init__(self, dim):
         """
-        (pygame.Surface) surface - surface to draw on
+        Basic python Perlin Noise surface generator
+
+        :param dim: dimension of surface to produce
         """
         self.surface = pygame.Surface(dim)
         # set some values
         self.width = self.surface.get_width()
         self.height = self.surface.get_height()
-        self.array2d = pygame.surfarray.array2d(self.surface)
         self.initialize()
 
     def initialize(self):
-        ## {{{ http://code.activestate.com/recipes/578470/ (r2)
-        # Perlin Noise Generator
-        # http://en.wikipedia.org/wiki/Perlin_noise
-        # http://en.wikipedia.org/wiki/Bilinear_interpolation
-        # FB36 - 20130222
+        """
+        generate surface
+
+        http://code.activestate.com/recipes/578470/ (r2)
+
+        Perlin Noise Generator
+        http://en.wikipedia.org/wiki/Perlin_noise
+        http://en.wikipedia.org/wiki/Bilinear_interpolation
+        FB36 - 20130222
+        """
         octaves = int(math.log(max(self.width, self.height), 2.0))
-        imgAr = [[0.0 for i in range(self.width)] for j in range(self.height)] # image array
+        imgAr = [[0.0 for i in range(self.width)] for j in range(self.height)]  # image array
         persistence = random.random()
         totAmp = 0.0
         # how many layers
@@ -57,44 +67,44 @@ class PerlinNoise(object):
                     z += ar[j + 1][i + 1] * dx0 * dy0
                     z /= nxny
                     imgAr[ky][kx] += z # add layers
+        # and put result to surface
+        p_array = pygame.PixelArray(self.surface)
         for ky in range(self.height):
             for kx in range(self.width):
                     c = int(imgAr[ky][kx] / totAmp * 255)
-                    self.array2d[kx][ky] = pygame.Color(c, c, c, 255) # add image layers together
+                    p_array[kx, ky] = pygame.Color(c, c, c, 255) # add image layers together
+        p_array.close()
 
     def update(self):
-        """blit pixelarray to surface"""
-        pygame.surfarray.blit_array(self.surface, self.array2d)
+        """ return surface """
         return self.surface
 
 
-def test():
+def main():
     try:
-        fps = 1
-        pygame.init()
-        surface = pygame.display.set_mode((800, 600))
-        thing = PerlinNoise(surface)
+        pygame.display.init()
+        surface = pygame.display.set_mode(DIM)
+        thing = PerlinNoise(DIM)
         clock = pygame.time.Clock()
         pause = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
-                    sys.exit(0)
+                    pygame.quit()
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
-                    sys.exit(1)
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
-                thing.update()
+                surface.blit(thing.update(), (0, 0))
                 pygame.display.flip()
     except KeyboardInterrupt:
         pygame.quit()
 
 
 if __name__ == '__main__':
-    test()
+    main()
 
