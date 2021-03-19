@@ -125,6 +125,25 @@ def mandelbrot_save(middle, step, width, height, maxiter):
                 data[index] = n
     return data
 
+def julia_complex(double complex middle, double step, int width, int height, int maxiter):
+    """
+    complex algorithm to get points for julia gaphics
+    """
+    cdef int y, x, i
+    cdef double zy, zx
+    cdef double complex z
+    for y in range(height):
+        zy = y * (yb - ya) / (height - 1) + ya
+        for x in range(width):
+            zx = x * (xb - xa) / (width - 1) + xa
+            z = complex(zx, zy)
+            for i in range(maxiter):
+                if abs(z) > 2.0:
+                    break
+                z = z * z + middle
+            yield i
+
+
 
 def mandelbrot_noncomplex(double complex middle, double step, int width, int height, int maxiter):
     """
