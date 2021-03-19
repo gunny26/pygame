@@ -14,10 +14,10 @@ def mapto(float value, float min1, float max1, float min2, float max2):
     """ map some value to a different scale """
     cdef float len1, len2
     try:
-        assert min1 <= value <= max1
+        assert min1 < max1
         len1 = max1 - min1
         len2 = max2 - min2
-        return value * len2 / len1
+        return min2 + value * len2 / len1
     except AssertionError as exc:
         print(f"value {value} not in range [{min1}, {max1}]")
         raise exc
@@ -154,3 +154,25 @@ def mandelbrot_noncomplex(double complex middle, double step, int width, int hei
                 zx = tempx
                 count += 1
             yield count
+
+def mandelbrot_path(double complex middle, int maxiter):
+    """
+    calculating the iterations of one specific point in complex plane
+
+    :param middle: complex number to calculate
+    :param maxiter: maximum iterations
+    :return <list>: list with interated complex numbers (x + y)
+    """
+    cdef double zx, zy, cx, tempx, cy
+    cdef int count
+    cx = middle.real  # step in real
+    cy = middle.imag  # step in imaginary
+    zx = 0  # starting value in real
+    zy = 0  # starting value in complex
+    count = 0  # iteration counter
+    while (zx * zx + zy * zy < 4) and (count < maxiter):
+        tempx = zx * zx - zy * zy + cx
+        zy = 2 * zx * zy + cy
+        zx = tempx
+        yield (zx, zy)
+        count += 1
