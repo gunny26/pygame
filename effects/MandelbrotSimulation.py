@@ -41,14 +41,69 @@ class MandelbrotPath:
     def initialize(self) -> pygame.Surface:
         """
         draw basic mandelbrot set on background surface
+        draw grid on surface
         """
-        data = mandelbrot_noncomplex(self.middle, self.step.real, self.surface.get_width(), self.surface.get_height(), int(self.maxiter))
-        color = pygame.PixelArray(self.b_surface)
+        surface = self.b_surface
+        data = mandelbrot_noncomplex(self.middle, self.step.real, surface.get_width(), surface.get_height(), int(self.maxiter))
+        color = pygame.PixelArray(surface)
         for index, point in enumerate(data):
-            x = index % self.surface.get_width()
-            y =  index // self.surface.get_width()
+            x = index % surface.get_width()
+            y =  index // surface.get_width()
             color[x, y] = self.palette[127 + point % 2 * 127]
         color.close()
+        # draw grid
+        grid_color = (0, 0, 0, 255)
+        grid_width = 20
+        for y in range(0, surface.get_height(), grid_width):
+            pygame.draw.line(surface, grid_color, (0, y), (surface.get_width(), y))
+        for x in range(0, surface.get_width(), grid_width):
+            pygame.draw.line(surface, grid_color, (x, 0), (x, surface.get_height()))
+
+    def complex_to_surface(self, c_point):
+        """
+        translate complex plane to surface plane
+        """
+        left = self.middle.real - self.surface.get_width() * self.step / 2
+        right = self.middle.real + self.surface.get_width() * self.step / 2
+        bottom = self.middle.imag - self.surface.get_height() * self.step / 2
+        top = self.middle.imag + self.surface.get_height() * self.step / 2
+        width = self.surface.get_width()
+        height = self.surface.get_height()
+        s_point = (
+            mapto(c_point[0], left, right, 0, width),
+            mapto(c_point[1], bottom, top, 0, height)
+        )
+        return s_point
+
+    def surface_to_complex(self, s_point):
+        """
+        translate surface plane to complex plane
+        """
+        left = self.middle.real - self.surface.get_width() * self.step / 2
+        right = self.middle.real + self.surface.get_width() * self.step / 2
+        c_span_real = right - left
+        bottom = self.middle.imag - self.surface.get_height() * self.step / 2
+        top = self.middle.imag + self.surface.get_height() * self.step / 2
+        c_span_imag = top - bottom
+        width = self.surface.get_width()
+        height = self.surface.get_height()
+        c_to_s = (
+            c_span_real / width,
+            c_span_imag / height
+        )
+        s_to_c = (
+            1 / c_to_s[0],
+            1 / c_to_s[1]
+        )
+        c_point = complex(
+            s_point[0] * c_to_s[0],
+            s_point[1] * c_to_s[1]
+        )
+        #c_point = complex(
+        #    mapto(s_point[0], 0, width, left, right),
+        #    mapto(s_point[1], 0, height, bottom, top)
+        #)
+        return c_point
 
     def update(self):
         if self.last_pos != pygame.mouse.get_pos():  # if something changed
@@ -59,20 +114,25 @@ class MandelbrotPath:
             width = self.surface.get_width()
             height = self.surface.get_height()
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            real = mapto(mouse_x, 0, DIM[0], left, right)
-            imag = mapto(mouse_y, 0, DIM[1], bottom, top)
-            self.framecount += 1
-            points = mandelbrot_path(complex(real, imag), 255)
+            c_pos = self.surface_to_complex(pygame.mouse.get_pos())
+            print(c_pos)
+            points = mandelbrot_path(c_pos, 255)
             s_points = []
             for index, point in enumerate(points):
                 c_r, c_i = point
+                s_point = self.complex_to_surface(point)
+                print(s_point)
                 s_x = self.dim[0] // 2 + mapto(c_r, left, right, 0, DIM[0])
                 s_y = self.dim[1] // 2 + mapto(c_i, bottom, top, 0, DIM[1])
                 s_points.append((s_x, s_y))
-            # draw on surface
+                #s_points.append(s_point)
+            # draw on copy of background surface
             self.surface = self.b_surface.copy()
             if len(s_points) > 2:
                 pygame.draw.lines(self.surface, (255,255,255,255), False, s_points, 1)
+            # remember last position
+            self.last_pos = pygame.mouse.get_pos()
+        self.framecount += 1
         return self.surface
 
 

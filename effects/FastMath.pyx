@@ -133,9 +133,9 @@ def julia_complex(double complex middle, double step, int width, int height, int
     cdef double zy, zx
     cdef double complex z
     for y in range(height):
-        zy = y * (yb - ya) / (height - 1) + ya
+        zy = y * step + step
         for x in range(width):
-            zx = x * (xb - xa) / (width - 1) + xa
+            zx = x * step + step
             z = complex(zx, zy)
             for i in range(maxiter):
                 if abs(z) > 2.0:
