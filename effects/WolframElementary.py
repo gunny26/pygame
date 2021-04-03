@@ -5,8 +5,10 @@ import random
 import pygame
 
 FPS = 50
-DIM =(320, 200)
-RULESET = 105
+DIM =(640, 480)
+RULESET = 195  # chaotic
+#RULESET = 110
+#RULESET = 199
 
 class WolframElementary(object):
     """ simple Cellular Automata - Wolfram Elementary"""
