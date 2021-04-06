@@ -8,6 +8,8 @@ from pygame import gfxdraw
 # own modules
 from RgbColorGradient import get_rgb_color_gradient
 
+FPS = 500
+
 class Hands:
     """Plasma Generator"""
 
@@ -118,16 +120,15 @@ class Hands2:
 
 def main():
     try:
-        fps = 50
-        pygame.init()
+        pygame.display.init()
         surface = pygame.display.set_mode((1024, 768))
         effects = [
-            Hands(surface, (512, 350), 200, 10),
+            Hands2(surface, (512, 350), 200, 10),
         ]
-        # clock = pygame.time.Clock()
+        clock = pygame.time.Clock()
         pause = False
         while True:
-            # clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
@@ -141,7 +142,7 @@ def main():
                 for effect in effects:
                     effect.update()
                 pygame.display.flip()
-            #pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
+            pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
     except KeyboardInterrupt:
         pygame.quit()
 
