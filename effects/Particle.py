@@ -1,19 +1,16 @@
 #!/usr/bin/python
-import sys
-import math
 import random
 # non std modules
 import pygame
-# own modules
-from Vector import Vector
 
 FPS = 50
+DIM = (320, 200)
 
 
 class Particle(object):
     """ Paticle in 2D space """
 
-    def __init__(self, surface:pygame.Surface, pos:pygame.Vector2, direction:pygame.Vector2, size:int, color:tuple):
+    def __init__(self, surface: pygame.Surface, pos: pygame.Vector2, direction: pygame.Vector2, size: int, color: tuple):
         """
         a particle in 2D space
 
@@ -68,22 +65,18 @@ class Particle(object):
 
 class Particles(object):
 
-    def __init__(self, surface:pygame.Surface, count:int):
+    def __init__(self, dim: tuple, count: int):
         """
         clas to draw some particles
 
         :param surface: surface to draw on
         :param count: number of particles
         """
-        self.surface = surface
-        self.count = count
+        self.surface = pygame.Surface(dim)
         # initialize
         self.particles = []
-        self.elasticity = 0  # bounciness
-        self.drag = 1.1  # speed of movement
-        self.gravity = pygame.Vector2(9.81, math.pi)  # gravity to the ground
         # initialize
-        for counter in range(self.count):
+        for counter in range(count):
             pos = pygame.Vector2(random.randint(0, self.surface.get_width()), random.randint(0, self.surface.get_height()))
             direction = pygame.Vector2(10 * (random.random() - 0.5), 10 * (random.random() - 0.5))
             color = pygame.Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
@@ -95,8 +88,10 @@ class Particles(object):
         """
         update every frame
         """
+        self.surface.fill(0)
         for particle in self.particles:
             particle.update()
+        return self.surface
 
     def collide(self, p1, p2):
         """
@@ -111,19 +106,17 @@ class Particles(object):
 
 
 def main():
-
     try:
-        surface = pygame.display.set_mode((640, 480))
-        pygame.init()
+        pygame.display.init()
+        surface = pygame.display.set_mode(DIM)
         things = (
-            Particles(surface, 20),
-            )
+            Particles(DIM, 20),
+        )
         clock = pygame.time.Clock()
         # mark pause state
         pause = False
         # fill background
         surface.fill((0, 0, 0, 255))
-        clicked = None
         while True:
             # limit to FPS
             clock.tick(FPS)
@@ -140,16 +133,14 @@ def main():
                 if keyinput[pygame.K_p]:
                     pause = not pause
             # Update Graphics
-            dirtyrects = []
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for thing in things:
-                    thing.update()
+                    surface.blit(thing.update(), (0, 0))
                 pygame.display.update()
-                # pygame.display.flip()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, pygame.error):
         pygame.quit()
 
-if __name__=='__main__':
-    main()
 
+if __name__ == '__main__':
+    main()
