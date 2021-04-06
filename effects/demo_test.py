@@ -29,22 +29,20 @@ from Interference import ColorInterference, CircleInterference
 from RgbColorGradient import get_rgb_color_gradient
 
 
+FPS = 50
+DIM = (320, 200)
 SIN = [math.sin(math.radians(degree)) for degree in range(0, 360, 1)]
 PALETTE = get_rgb_color_gradient((50, 140, 70, 255), (240, 0, 70, 255), 256)
 
 
 def main():
     try:
-        fps = 50  # framerate maximum
         frames = 0  # frame counter
-        width = 320  # width of display
-        height = 200  # height of display
         start_rgb = (255, 0, 0)
         target_rgb = (0, 255, 255)
-        pygame.display.init()
-        surface = pygame.display.set_mode((width, height))  # main foreground surface
-        b_surface = pygame.Surface((width, height))  # surface to place bacground on
         pygame.init()
+        surface = pygame.display.set_mode(DIM)  # main foreground surface
+        b_surface = pygame.Surface(DIM)  # surface to place bacground on
         # some music
         pygame.mixer.init()
         pygame.mixer.music.load("music/2019-01-10_-_Land_of_8_Bits_-_Stephen_Bennett_-_FesliyanStudios.com.mp3")
@@ -56,23 +54,23 @@ def main():
            # PerlinNoise(b_surface),
            # PlasmaFractal(b_surface),
            # PascalTriangle(b_surface, 4, 4, 60),
-           JuliaFractal((width, height))
+           JuliaFractal(DIM)
         ]
         for background in backgrounds:
             background.update()
         # pre initialize effects
         effects = [
-            Lissajou(surface, (160, 100), 100, 3, 1),
-            RotatingLines(surface, (160, 100), 100, 7, 0.9),
-            SinusText(surface, "Basic scrolling sinus text demo with pure python and pygame, woohooo...", 100, 20, 2, pygame.Color(0, 255, 255)),
-            ScrollText(surface, "Simple straight scrolling text", 150, pygame.Color(255, 255, 0)),
-            Fire(surface, pygame.Rect(0, 0, 320, 200), 4),
-            CoffeeDraw(surface),
+            Lissajou(DIM, DIM, 100, 3, 1),
+            RotatingLines(DIM, DIM, 100, 7, 0.9),
+            SinusText(DIM, "Basic scrolling sinus text demo with pure python and pygame, woohooo...", 100, 20, 2, pygame.Color(0, 255, 255)),
+            ScrollText(DIM, "Simple straight scrolling text", 150, pygame.Color(255, 255, 0)),
+            Fire(DIM, pygame.Rect(0, 0, 320, 200), 4),
+            CoffeeDraw(DIM),
         ]
         scenes = [
             {
                 "backgrounds": [
-                    PascalTriangle((width, height), 4, 4, 60)
+                    PascalTriangle(DIM, 4, 4, 60)
                 ],
                 "effects": [
                     effects[0],
@@ -80,71 +78,71 @@ def main():
                 ]
             }, {
                  "backgrounds": [
-                    PerlinNoise((width, height))
+                    PerlinNoise(DIM)
                 ],
                 "effects": [
                     effects[1],
                     effects[2],
                 ]
             }, {
-                "backgrounds" : [JuliaFractal((width, height))],
+                "backgrounds" : [JuliaFractal(DIM)],
                 "effects" : [
                     effects[2],
                     effects[3],
                 ],
             }, {
-                "backgrounds": [GradientBackground((width, height), start_rgb, target_rgb)],
+                "backgrounds": [GradientBackground(DIM, start_rgb, target_rgb)],
                 "effects": [
                     effects[4],
                     effects[3],
                 ]
             }, {
-                "backgrounds": [PlasmaFractal((width, height))],
+                "backgrounds": [PlasmaFractal(DIM)],
                 "effects": [
                     effects[5],
                     SpiralText(surface, "vertical scroling text, goind up and up and up and ...", pygame.Color(0, 255, 255), 30, 2),
                 ]
             }, {
-                "backgrounds": [GradientBackground((width, height), start_rgb, target_rgb)],
+                "backgrounds": [GradientBackground(DIM, start_rgb, target_rgb)],
                 "effects": [
                     effects[5],
                     effects[3],
                 ]
             }, {
-                "backgrounds": [GradientBackground((width, height), (0, 0, 0), (128, 50, 50))],
+                "backgrounds": [GradientBackground(DIM, (0, 0, 0), (128, 50, 50))],
                 "effects": [Starfield(surface, stars=100, depth=10, speed=0.01)],
             }, {
-                "backgrounds": [SpectrumCircle((width, height), 44100)],
+                "backgrounds": [SpectrumCircle(DIM, 44100)],
                 "effects": [Starfield(surface, stars=100, depth=10, speed=0.01)],
             }, {
-                "backgrounds": [SpectrumBar((width, height), 44100)],
+                "backgrounds": [SpectrumBar(DIM, 44100)],
                 "effects": [
                     Plasma(surface),
-                    ScrollText(surface, "so, yeah thats not great, have to work on it", 150, pygame.Color(255, 255, 0))
+                    ScrollText(DIM, "so, yeah thats not great, have to work on it", 150, pygame.Color(255, 255, 0))
                 ]
             }, {
-                "backgrounds" : [GradientBackground((width, height), start_rgb, target_rgb)],
+                "backgrounds" : [GradientBackground(DIM, start_rgb, target_rgb)],
                 "effects": [
-                    Particles(surface, 10),
-                    ScrollText(surface, "some bouncing particles, basic physics", 150, pygame.Color(255, 255, 0))
+                    Particles(DIM, 10),
+                    ScrollText(DIM, "some bouncing particles, basic physics", 150, pygame.Color(255, 255, 0))
                 ]
             }, {
-                "backgrounds" :[ColorInterference((width, height), PALETTE, SIN)],
+                "backgrounds" :[ColorInterference(DIM, PALETTE, SIN)],
                 "effects": [
-                    SuperformulaAnimation(surface, pygame.Vector2(160, 120), 100, (255, 255, 255)),
-                    ScrollText(surface, "superformula in action", 180, PALETTE[-1])
+                    SuperformulaAnimation(DIM, pygame.Vector2(160, 120), 100, (255, 255, 255)),
+                    ScrollText(DIM, "superformula in action", 180, PALETTE[-1])
                 ]
             }, {
-                "backgrounds" : [CircleInterference((width, height), PALETTE, SIN)],
+                "backgrounds" : [CircleInterference(DIM, PALETTE, SIN)],
                 "effects": [
-                    ArcAnimation(surface, pygame.Vector2(160, 120), 100, (0x74, 0x54, 0x6a)),
-                    ScrollText(surface, "moving circle arcs", 180, PALETTE[0])
+                    ArcAnimation(DIM, pygame.Vector2(160, 120), 100, (0x74, 0x54, 0x6a)),
+                    ScrollText(DIM, "moving circle arcs", 180, PALETTE[0])
                 ]
             }
         ]
         pause = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
@@ -161,13 +159,13 @@ def main():
                 surface.fill((0, 0, 0, 255))  # black out screen
                 for background in scenes[frames // 500 % len(scenes)]["backgrounds"]:
                     # every background wil return surface object while calling udate()
-                    surface.blit(background.update(), (0,0))  # blit background surface on x=0, y=0
+                    surface.blit(background.update(), (0, 0))  # blit background surface on x=0, y=0
                 for effect in scenes[frames // 500 % len(scenes)]["effects"]:
-                    effect.update()
+                    surface.blit(effect.update(), (0, 0))  # blit foreground
                 pygame.display.flip()
             frames += 1
             pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, pygame.error):
         pygame.quit()
 
 if __name__ == '__main__':

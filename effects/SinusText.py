@@ -5,10 +5,14 @@ import math
 import pygame
 
 
+FPS = 50
+DIM = (320, 200)
+
+
 class SinusText(object):
     """Sinus wave scroll text"""
 
-    def __init__(self, surface: pygame.Surface, text: str, hpos: int, amplitude:int, frequency:int, color: tuple, size: int = 30):
+    def __init__(self, dim: tuple, text: str, hpos: int, amplitude: int, frequency: int, color: tuple, size: int = 30):
         """
         :param surface: surface to draw on
         :param text: text to draw
@@ -18,7 +22,7 @@ class SinusText(object):
         :param color: color of font
         :param size: size of font
         """
-        self.surface = surface
+        self.surface = pygame.Surface(DIM)
         # prepend an append some spaces
         appendix = " " * (self.surface.get_width() // size)
         self.text = appendix + text + appendix
@@ -38,6 +42,7 @@ class SinusText(object):
         update every frame
         :param hpos: set new horizontal position
         """
+        self.surface.fill(0)
         if hpos is not None:
             self.hpos = hpos
         for offset in range(self.text_surface.get_width()):
@@ -50,20 +55,21 @@ class SinusText(object):
             self.position += 3
         else:
             self.position = 0
+        return self.surface
 
 
 def main():
     try:
-        fps = 50
-        surface = pygame.display.set_mode((600, 600))
-        pygame.init()
+        pygame.display.init()
+        pygame.font.init()
+        surface = pygame.display.set_mode(DIM)
         effects = [
-            SinusText(surface, "Basis scrolling sinus text demo with pure python and pygame, woohooo...", 200, 30, 2, pygame.Color(0, 255, 255))
-            ]
+            SinusText(DIM, "Basic scrolling sinus text demo with pure python and pygame, woohooo...", 100, 30, 2, pygame.Color(0, 255, 255))
+        ]
         clock = pygame.time.Clock()
         pause = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
@@ -75,7 +81,7 @@ def main():
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for effect in effects:
-                    effect.update()
+                    surface.blit(effect.update(), (0, 0))
                 pygame.display.flip()
     except KeyboardInterrupt:
         pygame.quit()
