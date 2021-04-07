@@ -4,10 +4,14 @@ import math
 import pygame
 
 
+FPS = 50
+DIM = (320, 200)
+
+
 class SpiralText(object):
     """Text scrolling up in spiral, if text is long enough it look like 3D"""
 
-    def __init__(self, surface: pygame.Surface, text: str, color: tuple, size: int = 30, speed: int = 1):
+    def __init__(self, dim: tuple, text: str, color: tuple, size: int = 30, speed: int = 1):
         """
 
         :param surface: <pygame.Surface> surface to draw on
@@ -16,28 +20,29 @@ class SpiralText(object):
         :param size: <int> size of font
         :param speed: <int> speed of rotation
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         self.text = text
         self.color = color
         self.size = size
         self.speed = speed
         # set font to render
         self.font = pygame.font.SysFont("mono", self.size, bold=True)
-        self.center = surface.get_width() // 2  # center of rotation
-        self.width = surface.get_width() // 4  # width in left and right of center
+        self.center = dim[0] // 2  # center of rotation
+        self.width = dim[1] // 4  # width in left and right of center
         self.angle = 0  # starting angle
         self.characters = []  # individual character information
         # initial placing
         for index, character in enumerate(text):
             self.characters.append({
                 "x": self.center + int(self.width * math.sin(math.radians(self.angle + 10 * index))),
-                "y": surface.get_height() + 2 * index * size,
+                "y": dim[1] + 2 * index * size,
                 "surface": self.font.render(character, True, self.color)
             })
         self.angle += 1
 
     def update(self):
         """ update every frame """
+        self.surface.fill(0)
         # local variables to speed up
         center = self.center
         speed = self.speed
@@ -57,20 +62,21 @@ class SpiralText(object):
             else:
                 character["y"] = height
         self.angle += 1
+        return self.surface
 
 
 def main():
     try:
-        fps = 50
-        surface = pygame.display.set_mode((600, 600))
-        pygame.init()
+        pygame.display.init()
+        pygame.font.init()
+        surface = pygame.display.set_mode(DIM)
         effects = [
-            SpiralText(surface, "vertical scroling text, goind up and up and up and ...", pygame.Color(0, 255, 255), 30, 2)
-            ]
+            SpiralText(DIM, "vertical scroling text, goind up and up and up and ...", pygame.Color(0, 255, 255), 30, 2)
+        ]
         clock = pygame.time.Clock()
         pause = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
@@ -82,7 +88,7 @@ def main():
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for effect in effects:
-                    effect.update()
+                    surface.blit(effect.update(), (0, 0))
                 pygame.display.flip()
     except KeyboardInterrupt:
         pygame.quit()
