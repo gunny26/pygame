@@ -9,18 +9,19 @@ from pygame import gfxdraw
 from RgbColorGradient import get_rgb_color_gradient
 
 FPS = 500
+DIM = (640, 480)
 
 class Hands:
     """Plasma Generator"""
 
-    def __init__(self, surface: pygame.Surface, center: tuple, amplitude: int = 256, num_parts: int = 16):
+    def __init__(self, dim: tuple, center: tuple, amplitude: int = 256, num_parts: int = 16):
         """
         :param surface: surface to draw on
         :param center: center of calculations in (x, y)
         :param amplitude: maximum amplitude of single part
         :param pats: number of parts to generate
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         self.center = center
         # set some values
         self.width = self.surface.get_width()
@@ -62,19 +63,20 @@ class Hands:
         #pygame.draw.line(self.points, self.colors[self.framecount % 256], self.last_target, target)
         #self.last_target = target  # new position
         self.framecount += 1
+        return self.surface
 
 
 class Hands2:
     """Plasma Generator"""
 
-    def __init__(self, surface: pygame.Surface, center: tuple, amplitude: int = 256, num_parts: int = 16):
+    def __init__(self, dim:tuple, center: tuple, amplitude: int = 256, num_parts: int = 16):
         """
         :param surface: surface to draw on
         :param center: center of calculations in (x, y)
         :param amplitude: maximum amplitude of single part
         :param pats: number of parts to generate
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         self.center = center
         # set some values
         self.width = self.surface.get_width()
@@ -116,14 +118,15 @@ class Hands2:
         #pygame.draw.line(self.points, self.colors[self.framecount % 256], self.last_target, target)
         #self.last_target = target  # new position
         self.framecount += 1
+        return self.surface
 
 
 def main():
     try:
         pygame.display.init()
-        surface = pygame.display.set_mode((1024, 768))
+        surface = pygame.display.set_mode(DIM)
         effects = [
-            Hands2(surface, (512, 350), 200, 10),
+            Hands2(surface, DIM, 200, 10),
         ]
         clock = pygame.time.Clock()
         pause = False
@@ -140,7 +143,7 @@ def main():
             if pause is not True:
                 surface.fill((0, 0, 0))
                 for effect in effects:
-                    effect.update()
+                    surface.blit(effect.update(), (0, 0))
                 pygame.display.flip()
             pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
     except KeyboardInterrupt:
