@@ -64,7 +64,7 @@ if __name__=='__main__':
         # define light position
         light = Vec4d(0, 10, 20, 0)
         # load from file, the self defined cube has some error
-        model = Mesh.from_file("obj_models/Porous_Sphere_v1_L1.123c784474c1-099f-44c9-bcbf-16b96e385352/15737_Porous_Sphere_v1_NEW.obj")
+        model = Mesh.from_file("obj_models/12140_Skull_v3_L2.obj")
         print(model)
         counter = 0
         # to translate model in world space

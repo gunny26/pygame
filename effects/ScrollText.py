@@ -3,10 +3,14 @@ import sys
 import pygame
 
 
+FPS = 50
+DIM = (320, 200)
+
+
 class ScrollText(object):
     """Simple 2d Scrolling Text"""
 
-    def __init__(self, surface, text, hpos, color, size=30):
+    def __init__(self, dim: tuple, text: str, hpos: int, color: pygame.Color, size: int = 30):
         """
         (pygame.Surface) surface - surface to draw on
         (string) text - text to draw
@@ -14,7 +18,7 @@ class ScrollText(object):
         (pygame.Color) color - color of font
         (int) size - size of font
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         # prepend and append some blanks
         appendix = " " * (self.surface.get_width() // size)
         self.text = appendix + text + appendix
@@ -28,9 +32,11 @@ class ScrollText(object):
 
     def update(self, hpos=None):
         """update every frame"""
+        self.surface.fill(0)
         if hpos is not None:
             self.hpos = hpos
-        self.surface.blit(self.text_surface,
+        self.surface.blit(
+            self.text_surface,
             (0, self.hpos),
             (self.position, 0, self.surface.get_width(), self.size)
         )
@@ -38,20 +44,21 @@ class ScrollText(object):
             self.position += 3
         else:
             self.position = 0
+        return self.surface
 
 
-def test():
+def main():
     try:
-        fps = 25
-        surface = pygame.display.set_mode((600, 600))
-        pygame.init()
-        spheres = (
-            ScrollText(surface, "Dolor Ipsum Dolor uswef", 400, pygame.Color(255,255,0)),
-            )
+        pygame.display.init()
+        pygame.font.init()
+        surface = pygame.display.set_mode(DIM)
+        effects = (
+            ScrollText(DIM, "Dolor Ipsum Dolor uswef", 100, pygame.Color(255, 255, 0, 255)),
+        )
         clock = pygame.time.Clock()
         pause = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
@@ -62,13 +69,13 @@ def test():
                 if keyinput[pygame.K_ESCAPE]:
                     sys.exit(1)
             if pause is not True:
-                surface.fill((0, 0, 0, 255))
-                for thing in spheres:
-                    thing.update()
+                surface.fill(0)
+                for effect in effects:
+                    surface.blit(effect.update(), (0, 0))
                 pygame.display.flip()
     except KeyboardInterrupt:
-        pygame,quit()
+        pygame.quit()
+
 
 if __name__ == '__main__':
-    test()
-
+    main()

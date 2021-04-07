@@ -1,15 +1,18 @@
 #!/usr/bin/python3
 """ Foreground effect """
-import sys
 import math
 # non std modules
 import pygame
 
 
+FPS = 50
+DIM = (320, 200)
+
+
 class Lissajou(object):
     """ Lines moving on Lissajous paths around """
 
-    def __init__(self, surface: pygame.Surface, center: tuple = (160, 100), radius: int = 100, factor: int = 2, anglecount: int = 1):
+    def __init__(self, dim: tuple, center: tuple = (160, 100), radius: int = 100, factor: int = 2, anglecount: int = 1):
         """
         :param surface: surface to draw on
         :param center: center the lines are moving around
@@ -17,7 +20,7 @@ class Lissajou(object):
         :param factor: factor between X- and Y-wave
         :param anglecount: anglestep per update
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         self.radius = radius
         self.center = center
         self.factor = factor
@@ -26,6 +29,7 @@ class Lissajou(object):
 
     def update(self):
         """ update every frame """
+        self.surface.fill((0, 0, 0, 0))
         points = []
         for afterglow in range(1, 20):
             angle = self.angle - afterglow  # this amount of degrees back
@@ -34,28 +38,27 @@ class Lissajou(object):
             color = (255 // afterglow, 255, 255)
             points.append((x, y, color))
         for index, point in enumerate(points[:-1]):
-            pygame.draw.line(self.surface, point[2], (point[0], point[1]), (points[index+1][0], points[index+1][1]), 2)
+            pygame.draw.line(self.surface, point[2], (point[0], point[1]), (points[index + 1][0], points[index + 1][1]), 2)
         self.angle += self.anglecount
+        return self.surface
 
 
 def main():
     try:
-        fps = 50
-        surface = pygame.display.set_mode((320, 200))
-        pygame.init()
+        pygame.display.init()
+        surface = pygame.display.set_mode(DIM)
         clock = pygame.time.Clock()
+        size = (DIM[0] // 2, DIM[1] // 2)
         effects = [
-            Lissajou(surface, (160, 100), 100, 3, 1),
-            Lissajou(surface, (160, 100), 80, 5, 1.5),
-            Lissajou(surface, (160, 100), 60, 7, 2),
-            Lissajou(surface, (160, 100), 40, 11, 2.5),
-            Lissajou(surface, (160, 100), 20, 13, 3),
+            Lissajou(DIM, size, 100, 3, 1),
+            Lissajou(DIM, size, 80, 5, 1.5),
+            Lissajou(DIM, size, 60, 7, 2),
+            Lissajou(DIM, size, 40, 11, 2.5),
+            Lissajou(DIM, size, 20, 13, 3),
         ]
-        for effect in effects:
-            effect.update()
         pause = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
@@ -67,7 +70,7 @@ def main():
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for effect in effects:
-                    effect.update()
+                    surface.blit(effect.update(), (0, 0), special_flags=pygame.BLEND_ADD)
                 pygame.display.flip()
     except KeyboardInterrupt:
         pygame.quit()

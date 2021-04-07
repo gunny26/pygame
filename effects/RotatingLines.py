@@ -80,7 +80,7 @@ def main():
                     surface.blit(effect.update(), (0, 0), special_flags=pygame.BLEND_ADD)
                 pygame.display.flip()
             pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, pygame.error):
         pygame.quit()
 
 
