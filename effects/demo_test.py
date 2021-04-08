@@ -30,7 +30,7 @@ from RgbColorGradient import get_rgb_color_gradient
 
 
 FPS = 50
-DIM = (320, 200)
+DIM = (640, 400)
 SIN = [math.sin(math.radians(degree)) for degree in range(0, 360, 1)]
 PALETTE = get_rgb_color_gradient((50, 140, 70, 255), (240, 0, 70, 255), 256)
 
@@ -100,7 +100,7 @@ def main():
                 "backgrounds": [PlasmaFractal(DIM)],
                 "effects": [
                     effects[5],
-                    SpiralText(surface, "vertical scroling text, goind up and up and up and ...", pygame.Color(0, 255, 255), 30, 2),
+                    SpiralText(DIM, "vertical scroling text, goind up and up and up and ...", pygame.Color(0, 255, 255), 30, 2),
                 ]
             }, {
                 "backgrounds": [GradientBackground(DIM, start_rgb, target_rgb)],
@@ -110,14 +110,14 @@ def main():
                 ]
             }, {
                 "backgrounds": [GradientBackground(DIM, (0, 0, 0), (128, 50, 50))],
-                "effects": [Starfield(surface, stars=100, depth=10, speed=0.01)],
+                "effects": [Starfield(DIM, stars=100, depth=10, speed=0.01)],
             }, {
                 "backgrounds": [SpectrumCircle(DIM, 44100)],
-                "effects": [Starfield(surface, stars=100, depth=10, speed=0.01)],
+                "effects": [Starfield(DIM, stars=100, depth=10, speed=0.01)],
             }, {
                 "backgrounds": [SpectrumBar(DIM, 44100)],
                 "effects": [
-                    Plasma(surface),
+                    Plasma(DIM),
                     ScrollText(DIM, "so, yeah thats not great, have to work on it", 150, pygame.Color(255, 255, 0))
                 ]
             }, {
@@ -147,21 +147,21 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    sys.exit(0)
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
-                    sys.exit(1)
+                    return
                 if keyinput[pygame.K_SPACE]:
                     pause = not pause is True  # invert pause
             if not pause:
                 surface.fill((0, 0, 0, 255))  # black out screen
                 for background in scenes[frames // 500 % len(scenes)]["backgrounds"]:
                     # every background wil return surface object while calling udate()
-                    surface.blit(background.update(), (0, 0))  # blit background surface on x=0, y=0
+                    surface.blit(background.update(), (0, 0), special_flags=pygame.BLEND_ADD)  # blit background surface on x=0, y=0
                 for effect in scenes[frames // 500 % len(scenes)]["effects"]:
-                    surface.blit(effect.update(), (0, 0))  # blit foreground
+                    surface.blit(effect.update(), (0, 0), special_flags=pygame.BLEND_ADD)  # blit foreground
                 pygame.display.flip()
             frames += 1
             pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
