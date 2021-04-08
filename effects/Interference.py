@@ -6,7 +6,8 @@ from pygame import gfxdraw
 # own modules
 from RgbColorGradient import get_rgb_color_gradient
 
-FPS = 60
+
+FPS = 50
 DIM = (320, 200)  # initial window size
 SIN = [math.sin(math.radians(degree)) for degree in range(0, 360, 1)]
 PALETTE = get_rgb_color_gradient((50, 140, 70, 255), (240, 0, 70, 255), 256)
@@ -92,8 +93,8 @@ def main():
         pygame.display.init()  # only initialize display, no other modules
         surface = pygame.display.set_mode(DIM)
         effects = [
-            CircleInterference(DIM)
-            # ColorInterference(DIM)
+            # CircleInterference(DIM)
+            ColorInterference(DIM)
         ]
         clock = pygame.time.Clock()
         pause = False
@@ -103,10 +104,12 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                    return
                 if keyinput[pygame.K_f]:  # go to FULLSCREEN
                     pygame.display.quit()
                     pygame.display.init()

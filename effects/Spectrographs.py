@@ -9,6 +9,10 @@ import numpy as np
 from RgbColorGradient import get_rgb_color_gradient
 
 
+FPS = 50
+DIM = (320, 200)
+
+
 class SpectrumBar:
     """ audio spectrograph effect for background """
 
@@ -93,22 +97,23 @@ class SpectrumCircle:
 
 def main():
     try:
-        fps = 50
-        surface = pygame.display.set_mode((600, 600))
         pygame.init()
-        background = SpectrumCircle((200, 200), 44100)
+        surface = pygame.display.set_mode(DIM)
+        background = SpectrumCircle(DIM, 44100)
         clock = pygame.time.Clock()
         pause = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                    return
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 surface.blit(background.update(), (0, 0))

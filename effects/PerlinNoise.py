@@ -1,6 +1,5 @@
 #!/usr/bin/python
 #
-import sys
 import random
 import math
 # non std modules
@@ -9,6 +8,7 @@ import pygame
 
 FPS = 50
 DIM = (320, 200)
+
 
 class PerlinNoise(object):
     """ Perlin Noise generated 2d surface """
@@ -47,8 +47,8 @@ class PerlinNoise(object):
             totAmp += amp
             # create an image from n by m grid of random numbers (w/ amplitude)
             # using Bilinear Interpolation
-            n = freq + 1 # grid size
-            m = freq + 1 # grid size
+            n = freq + 1  # grid size
+            m = freq + 1  # grid size
             ar = [[random.random() * amp for i in range(n)] for j in range(m)]
             nx = self.width / (n - 1.0)
             ny = self.height / (m - 1.0)
@@ -66,13 +66,13 @@ class PerlinNoise(object):
                     z += ar[j + 1][i] * dx1 * dy0
                     z += ar[j + 1][i + 1] * dx0 * dy0
                     z /= nxny
-                    imgAr[ky][kx] += z # add layers
+                    imgAr[ky][kx] += z  # add layers
         # and put result to surface
         p_array = pygame.PixelArray(self.surface)
         for ky in range(self.height):
             for kx in range(self.width):
-                    c = int(imgAr[ky][kx] / totAmp * 255)
-                    p_array[kx, ky] = pygame.Color(c, c, c, 255) # add image layers together
+                c = int(imgAr[ky][kx] / totAmp * 255)
+                p_array[kx, ky] = pygame.Color(c, c, c, 255)  # add image layers together
         p_array.close()
 
     def update(self):
@@ -84,7 +84,7 @@ def main():
     try:
         pygame.display.init()
         surface = pygame.display.set_mode(DIM)
-        thing = PerlinNoise(DIM)
+        effect = PerlinNoise(DIM)
         clock = pygame.time.Clock()
         pause = False
         while True:
@@ -93,13 +93,15 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                    return
             if pause is not True:
-                surface.fill((0, 0, 0, 255))
-                surface.blit(thing.update(), (0, 0))
+                surface.fill(0)
+                surface.blit(effect.update(), (0, 0))
                 pygame.display.flip()
     except KeyboardInterrupt:
         pygame.quit()
@@ -107,4 +109,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

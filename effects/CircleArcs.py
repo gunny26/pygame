@@ -111,12 +111,12 @@ def main():
         surface = pygame.display.set_mode(DIM)
         things = (
             ArcAnimation(DIM, pygame.Vector2(320, 240), 200, (0x74, 0x54, 0x6a)),
-            )
+        )
         clock = pygame.time.Clock()
         # mark pause state
         pause = False
         # fill background
-        surface.fill((0, 0, 0, 255))
+        surface.fill(0)
         while True:
             # limit to FPS
             clock.tick(FPS)
@@ -125,16 +125,18 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 # print keyinput
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                    return
                 if keyinput[pygame.K_p]:
                     pause = not pause
             # Update Graphics
             if pause is not True:
-                surface.fill((0, 0, 0, 255))
+                surface.fill(0)
                 for thing in things:
                     surface.blit(thing.update(), (0, 0))
                 pygame.display.flip()
@@ -145,4 +147,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

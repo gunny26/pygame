@@ -82,10 +82,12 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                    return
             if pause is not True:
                 surface.fill((0, 0, 0))
                 for background in backgrounds:

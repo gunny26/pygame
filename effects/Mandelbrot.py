@@ -29,7 +29,6 @@ class MandelbrotZoom:
 
     def __init__(self, dim: tuple, middle: complex, magnify: float, maxiter: int = 100, palette: list=PALETTE):
         """
-        (pygame.Surface) surface - surface to draw on
         :param dim: dimension of output surface in (x, y)
         :param middle: complex number to zoom in
         :param magnify: factor to zoom in every frame

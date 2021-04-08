@@ -3,6 +3,10 @@
 import pygame
 
 
+FPS = 50
+DIM = (320, 200)
+
+
 def get_rgb_color_gradient(start_rgb: tuple, target_rgb: tuple, steps: int) -> list:
     """
     calculating color gradient in RGB space from start to end color
@@ -72,18 +76,15 @@ class GradientBackground2():
 
 def main():
     try:
-        fps = 50
-        width = 600
-        height = 400
+        pygame.display.init()
+        surface = pygame.display.set_mode(DIM)
         start_rgb = (0, 100, 200)
         target_rgb = (200, 100, 0)
-        surface = pygame.display.set_mode((width, height))
-        pygame.init()
-        clock = pygame.time.Clock()
-        bg_surface = GradientBackground((width, height), start_rgb, target_rgb)
+        bg_surface = GradientBackground(DIM, start_rgb, target_rgb)
         pause = False
+        clock = pygame.time.Clock()
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:

@@ -50,7 +50,7 @@ class HorizontalRasterBar:
 class VerticalRasterBar:
     """ some simple vertical raster bar """
 
-    def __init__(self, dim:tuple, x_pos: int, bars: int = 5, speed: int = 2, palette: list = PALETTE, sin: list = SIN):
+    def __init__(self, dim: tuple, x_pos: int, bars: int = 5, speed: int = 2, palette: list = PALETTE, sin: list = SIN):
         """
         :param dim: dimensio of surface to draw on
         :param x_pos: central x position
@@ -101,10 +101,12 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                    return
                 if keyinput[pygame.K_f]:  # go to FULLSCREEN
                     pygame.display.quit()
                     pygame.display.init()
@@ -125,4 +127,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

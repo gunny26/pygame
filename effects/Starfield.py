@@ -3,22 +3,25 @@
 import random
 # non std modules
 import pygame
-from pygame import gfxdraw
 # own modules
 from Vec3d import Vec3d
+
+
+FPS = 50
+DIM = (320, 200)
 
 
 class Starfield(object):
     """ Starfield with 3D Points """
 
-    def __init__(self, surface: pygame.Surface, stars: int, depth: int, speed: float = 0.01):
+    def __init__(self, dim: tuple, stars: int, depth: int, speed: float = 0.01):
         """
-        :param surface: surface to draw on
+        :param dim: dimension of surface
         :param stars: amount of stars to create
         :param depth: z axis depth from 0 to 0 + depth
         :param speed: how fast should stars travel
         """
-        self.surface = surface
+        self.surface = pygame.Surface(dim)
         self.stars = stars
         self.depth = depth
         self.speed = speed
@@ -43,26 +46,29 @@ class Starfield(object):
         """
         # local variables to speed up
         surface = self.surface
+        surface.fill(0)
         width = surface.get_width()
         height = surface.get_height()
         color = self.color
         speed = self.speed
+        p_array = pygame.PixelArray(surface)
         for star in self.stars:
             tstar = star.project(width, height, viewer_distance, fov)
-            pygame.gfxdraw.pixel(surface, int(tstar.x), int(tstar.y), color)
+            p_array[int(tstar.x) % width, int(tstar.y) % height] = color
             star.x -= speed
             if star.x < -2:
                 star.x = 2
+        p_array.close()
+        return self.surface
 
 
 def main():
     """main loop"""
     try:
-        fps = 50
-        surface = pygame.display.set_mode((600, 600))
-        pygame.init()
+        pygame.display.init()
+        surface = pygame.display.set_mode(DIM)
         effects = (
-            Starfield(surface, stars=100, depth=10, speed=0.01),
+            Starfield(DIM, stars=100, depth=10, speed=0.01),
             )
         clock = pygame.time.Clock()
         # for 3d projection
@@ -71,7 +77,7 @@ def main():
         pause = False
         changed = False
         while True:
-            clock.tick(fps)
+            clock.tick(FPS)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
@@ -101,7 +107,7 @@ def main():
             if pause is not True:
                 surface.fill((0, 0, 0, 255))
                 for effect in effects:
-                    effect.update(viewer_distance=viewer_distance, fov=fov)
+                    surface.blit(effect.update(viewer_distance=viewer_distance, fov=fov), (0, 0))
                 pygame.display.flip()
             if changed:  # if something has changed, print it
                 print(f"fov      : {fov}")

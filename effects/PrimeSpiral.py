@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import math
 # non std modules
 import pygame
 
@@ -75,10 +74,9 @@ def main():
     try:
         pygame.display.init()
         surface = pygame.display.set_mode(DIM)
-        pygame.init()
         effects = [
             PrimeSpiral(DIM)
-            ]
+        ]
         clock = pygame.time.Clock()
         pause = False
         while True:
@@ -87,12 +85,14 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                    return
             if pause is not True:
-                surface.fill((0, 0, 0, 255))
+                surface.fill(0)
                 for effect in effects:
                     surface.blit(effect.update(), (0, 0))
                 pygame.display.flip()

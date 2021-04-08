@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import sys
 import random
 # non std modules
 import pygame
@@ -8,6 +7,7 @@ import numpy
 
 FPS = 50
 DIM = (320, 200)
+
 
 class Fire(object):
     """
@@ -71,12 +71,14 @@ class Fire(object):
                 #    N
                 #   OOO
                 #    O
-                self.fire[x][y] = \
-                    ((self.fire[(x - 1) % w][(y + 1) % h] \
-                    + self.fire[(x) % w][(y + 2) % h] \
-                    + self.fire[(x + 1) % w][(y + 1) % h] \
-                    + self.fire[(x) % w][(y + 3) % h]) \
-                    * 16) / 65
+                self.fire[x][y] = (
+                    (
+                        self.fire[(x - 1) % w][(y + 1) % h] +
+                        self.fire[(x) % w][(y + 2) % h] +
+                        self.fire[(x + 1) % w][(y + 1) % h] +
+                        self.fire[(x) % w][(y + 3) % h]
+                    ) * 16
+                ) / 65
                 # the last factor 16/65 should be slightly larger than 4
                 # and lesser than 5
                 # closer to 4 will make flames higher
@@ -90,14 +92,14 @@ class Fire(object):
 
 def main():
     try:
-        surface = pygame.display.set_mode(DIM)
         pygame.init()
+        surface = pygame.display.set_mode(DIM)
         effects = (
             Fire(DIM, pygame.Rect(0, 0, 320, 200), 8),
-            )
+        )
         clock = pygame.time.Clock()
         pause = False
-        surface.fill((0, 0, 0))
+        surface.fill(0)
         while True:
             clock.tick(FPS)
             events = pygame.event.get()
@@ -112,7 +114,7 @@ def main():
                     return
             if pause is not True:
                 for effect in effects:
-                    surface.blit(effect.update(),(0, 0))
+                    surface.blit(effect.update(), (0, 0))
                 pygame.display.flip()
     except KeyboardInterrupt:
         pygame.quit()
@@ -120,14 +122,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    sys.exit(0)
-    import sys
-    import os
-    import cProfile
-    import pstats
-    profile = os.path.basename(sys.argv[0].split(".")[0])
-    cProfile.runctx( "test()", globals(), locals(), filename=profile)
-    s = pstats.Stats(profile)
-    s.sort_stats('time')
-    s.print_stats(0.1)
-    os.unlink(profile)

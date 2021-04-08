@@ -16,7 +16,10 @@ class ImageFaderHorizontal:
         (pygame.Surface) surface - surface to draw on
         """
         self.dim = dim
-        self.surface = pygame.image.load(open(filename, "rb")).convert()
+        self.surface = pygame.Surface(dim)
+        with open(filename, "rb") as infile:  # load image from file
+            i_surface = pygame.image.load(infile).convert()
+        pygame.transform.scale(i_surface, dim, self.surface)  # scale to desired dimension
         self.height = self.surface.get_height() // slices
         self.width = self.surface.get_width()
         self.s_surfaces = []
@@ -45,8 +48,10 @@ class ImageFaderVertical:
         (pygame.Surface) surface - surface to draw on
         """
         self.dim = dim
-        self.surface = pygame.image.load(open(filename, "rb")).convert()
-        print(self.surface.get_width(), self.surface.get_height())
+        self.surface = pygame.Surface(dim)
+        with open(filename, "rb") as infile:  # load image from file
+            i_surface = pygame.image.load(infile).convert()
+        pygame.transform.scale(i_surface, dim, self.surface)  # scale to desired dimension
         self.height = self.surface.get_height()
         self.width = self.surface.get_width() // slices
         self.s_surfaces = []
@@ -77,8 +82,11 @@ class ImageFaderDisappear:
         :param pixel: how many pixel per frame to delete
         """
         self.dim = dim
-        self.surface = pygame.image.load(open(filename, "rb")).convert()
         self.pixels = pixels
+        self.surface = pygame.Surface(dim)
+        with open(filename, "rb") as infile:  # load image from file
+            i_surface = pygame.image.load(infile).convert()
+        pygame.transform.scale(i_surface, dim, self.surface)  # scale to desired dimension
         self.frames_to_finish = self.surface.get_width() * self.surface.get_height() // pixels
         print(f"Fade will be finished in {self.frames_to_finish}")
         self.framecount = 0
@@ -92,11 +100,6 @@ class ImageFaderDisappear:
                 for pixel in range(self.pixels):
                     x = random.randint(0, width - 1)
                     y = random.randint(0, height - 1)
-                    while p_array[x, y] == 0:
-                        x += 1
-                        y += 1
-                        x %= width
-                        y %= height
                     p_array[x, y] = 0
         else:
             print("Fade is finished")
@@ -121,19 +124,22 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
             keyinput = pygame.key.get_pressed()
             if keyinput is not None:
                 if keyinput[pygame.K_ESCAPE]:
                     pygame.quit()
+                    return
                 if keyinput[pygame.K_f]:  # go to FULLSCREEN
                     pygame.display.quit()
                     pygame.display.init()
                     surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
             if pause is not True:
-                surface.fill((0, 0, 0))
+                surface.fill(0)
                 for background in effects:
-                    b_surface = background.update()
-                    pygame.transform.scale(b_surface, (surface.get_width(), surface.get_height()), surface)  # blit and scale to display
+                    surface.blit(background.update(), (0, 0))
+                    # b_surface = background.update()
+                    # pygame.transform.scale(b_surface, (surface.get_width(), surface.get_height()), surface)  # blit and scale to display
                 pygame.display.flip()
             pygame.display.set_caption("frame rate: %.2f frames per second" % clock.get_fps())
     except KeyboardInterrupt:
@@ -144,4 +150,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
