@@ -11,17 +11,32 @@ from RgbColorGradient import get_rgb_color_gradient
 FPS = 500
 DIM = (640, 480)
 
-class Hands:
+
+@dataclass
+class Pendulum:
+    """Class for keeping track of an item in inventory."""
+    center: pygame.Vector2  # initial position at framecount = 0
+    rod: pygame.Vector2  # length of rod, from center, mass on the other hand
+    mass: pygame.Vector2  # mass of blob
+    gravity: pygame.Vector2  # unit vector of gravity
+
+    def update(self):
+        self.pos = self.center + self.rod * self.mass * self.gravity
+
+
+class Pendulums:
     """Plasma Generator"""
 
-    def __init__(self, dim: tuple, center: tuple, amplitude: int = 256, num_parts: int = 16):
+    def __init__(self, dim: tuple):
         """
         :param surface: surface to draw on
-        :param center: center of calculations in (x, y)
-        :param amplitude: maximum amplitude of single part
-        :param pats: number of parts to generate
         """
         self.surface = pygame.Surface(dim)
+        center = pygame.Vector2(dim[0] // 2, 50)
+        pendulums = [
+            center, Pendulum(
+                pygame.Vector2(100, 100),
+                pygame.Vector2(
         self.center = center
         # set some values
         self.width = self.surface.get_width()
@@ -69,7 +84,7 @@ class Hands:
 class Hands2:
     """Plasma Generator"""
 
-    def __init__(self, dim: tuple, center: tuple, amplitude: int = 256, num_parts: int = 16):
+    def __init__(self, dim:tuple, center: tuple, amplitude: int = 256, num_parts: int = 16):
         """
         :param surface: surface to draw on
         :param center: center of calculations in (x, y)
@@ -126,7 +141,7 @@ def main():
         pygame.display.init()
         surface = pygame.display.set_mode(DIM)
         effects = [
-            Hands(DIM, 200, 10),
+            Hands2(surface, DIM, 200, 10),
         ]
         clock = pygame.time.Clock()
         pause = False

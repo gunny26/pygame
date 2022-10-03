@@ -14,6 +14,7 @@ from SpiralText import SpiralText
 from Starfield import Starfield
 from Plasma import Plasma
 from Particle import Particles
+from Pendulum import Pendulums, Origin
 # background effects
 from PerlinNoise import PerlinNoise
 from PlasmaFractal import PlasmaFractal
@@ -65,6 +66,7 @@ def main():
             SinusText(DIM, "Basic scrolling sinus text demo with pure python and pygame, woohooo...", 100, 20, 2, pygame.Color(0, 255, 255)),
             ScrollText(DIM, "Simple straight scrolling text", 150, pygame.Color(255, 255, 0)),
             Fire(DIM, pygame.Rect(0, 0, 320, 200), 4),
+            Pendulums(DIM, (100, 0, 0), Origin((300, 300)), 5, 150),
             CoffeeDraw(DIM),
         ]
         scenes = [
